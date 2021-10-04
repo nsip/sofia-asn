@@ -7,7 +7,7 @@ import (
 )
 
 func TestParseMeta(t *testing.T) {
-	bytes, err := os.ReadFile("../metadata.pretty.json")
+	bytes, err := os.ReadFile("../data/metadata.pretty.json")
 	if err != nil {
 		panic(err)
 	}
@@ -18,12 +18,12 @@ func TestParseMeta(t *testing.T) {
 }
 
 func TestNodeProcess(t *testing.T) {
-	bytes, err := os.ReadFile("../node.pretty.json")
+	bytes, err := os.ReadFile("../data/node.pretty.json")
 	if err != nil {
 		panic(err)
 	}
 
-	bytesMeta, err := os.ReadFile("../metadata.pretty.json")
+	bytesMeta, err := os.ReadFile("../data/metadata.pretty.json")
 	if err != nil {
 		panic(err)
 	}

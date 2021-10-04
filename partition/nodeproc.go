@@ -1,12 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
-	"regexp"
 	"strings"
 
+	"github.com/nsip/sofia-asn/tool"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
@@ -24,52 +25,16 @@ func parseMeta(js string) map[string]string {
 	return mMeta
 }
 
-func nodeProcess(bytes []byte, uri string, meta map[string]string, outdir string) {
+func nodeProcess(data []byte, uri string, meta map[string]string, outdir string) {
+
+	e := bytes.LastIndexAny(data, "}")
+	data = data[:e+1]
 
 	outdir = strings.Trim(outdir, `./\`)
-
-	uri = strings.TrimSuffix(uri, "/")
-	uri = strings.TrimSuffix(uri, "\\")
-	uri += "/"
-
-	// mData := make(map[string]interface{})
-	// json.Unmarshal(bytes, &mData)
-
-	js := string(bytes)
-	// fmt.Sprint(js)
-
-	r := regexp.MustCompile(`"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}":`)
-	// ids := r.FindAllString(js, -1)
-	pGrp := r.FindAllStringIndex(js, -1)
-	fmt.Println(len(pGrp), js[pGrp[0][0]:pGrp[0][1]])
-
 	parts := []string{}
-
 	out := ""
-	for i := 0; i < len(pGrp); i++ {
 
-		p, pn := pGrp[i], []int{}
-		if i < len(pGrp)-1 {
-			p, pn = pGrp[i], pGrp[i+1]
-		}
-
-		ids, ide := p[0]+1, p[1]-2
-		id := js[ids:ide]
-		// fmt.Println(id)
-
-		blks, blke := 0, 0
-		if i < len(pGrp)-1 {
-			blks, blke = p[1], pn[0]-1
-		} else {
-			blks, blke = p[1], len(js)-1
-		}
-
-		block := js[blks:blke]
-		block = strings.TrimSuffix(block, " ")
-		block = strings.TrimSuffix(block, "\n")
-		block = strings.TrimSuffix(block, ",")
-
-		////////////////////////////////////////
+	tool.ScanNode(data, func(i int, id, block string) bool {
 
 		// "uuid": {id} => "id": "http://abc/def/{id}"
 		newIdVal := fmt.Sprintf("%s%s", uri, gjson.Get(block, "uuid").String())
@@ -90,50 +55,9 @@ func nodeProcess(bytes []byte, uri string, meta map[string]string, outdir string
 
 		part := fmt.Sprintf(`"%s": %s`, id, block)
 		parts = append(parts, part)
-	}
+		return true
+	})
 
-	out = "{" + strings.Join(parts, ",")
-
-	/////////////////////////////////////////////////////////////////////////
-
-	// I := 0
-
-	// for id, mBlock := range mData {
-	// 	// fmt.Sprintln(id)
-
-	// 	bytes, _ := json.Marshal(mBlock)
-	// 	block := string(bytes)
-	// 	// block := gjson.Get(js, id).String()
-
-	// 	// fmt.Println(block)
-
-	// 	newIdVal := fmt.Sprintf("%s%s", uri, gjson.Get(block, "uuid").String())
-	// 	block, _ = sjson.Set(block, "uuid", newIdVal)
-	// 	block = strings.Replace(block, `"uuid"`, `"id"`, 1)
-
-	// 	constr := gjson.Get(block, "connections").String()
-	// 	m := make(map[string]interface{})
-	// 	json.Unmarshal([]byte(constr), &m)
-
-	// 	for k, v := range m {
-	// 		// "abcdeft" => "Levels" etc.
-	// 		block = strings.Replace(block, k, meta[k], 1)
-	// 		// "abc-def" => "http://abc/def/{id}"
-	// 		for _, a := range v.([]interface{}) {
-	// 			block = strings.Replace(block, a.(string), fmt.Sprintf("%s%s", uri, a), 1)
-	// 		}
-	// 	}
-
-	// 	out, _ = sjson.SetRaw(out, id, block)
-
-	// 	// fmt.Println(out)
-
-	// 	if I == 10000 {
-	// 		break
-	// 	}
-
-	// 	I++
-	// }
-
+	out = "{" + strings.Join(parts, ",") + "}"
 	os.WriteFile(fmt.Sprintf("./%s/node-meta.json", outdir), []byte(out), os.ModePerm)
 }

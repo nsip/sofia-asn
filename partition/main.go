@@ -9,11 +9,11 @@ func main() {
 	outdir := "out"
 	os.MkdirAll(fmt.Sprintf("./%s/", outdir), os.ModePerm)
 
-	bytes, err := os.ReadFile("../data/tree.pretty.json")
+	data, err := os.ReadFile("../data/tree.pretty.json")
 	if err != nil {
 		panic(err)
 	}
-	js := string(bytes)
+	js := string(data)
 
 	la(js, outdir)
 	ccp(js, outdir)
@@ -21,7 +21,7 @@ func main() {
 
 	//////////////////////////////////////////////////////////////
 
-	bytes, err = os.ReadFile("../data/node.pretty.json")
+	data, err = os.ReadFile("../data/node.pretty.json")
 	if err != nil {
 		panic(err)
 	}
@@ -31,5 +31,5 @@ func main() {
 		panic(err)
 	}
 	mMeta := parseMeta(string(bytesMeta))
-	nodeProcess(bytes, "http://rdf.curriculum.edu.au/202110/", mMeta, outdir)
+	nodeProcess(data, "http://rdf.curriculum.edu.au/202110/", mMeta, outdir)
 }
