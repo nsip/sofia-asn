@@ -12,15 +12,34 @@ import (
 )
 
 type asnjson struct {
-	Id string `json:"id"`
+	Id string `json:"Id"`
+
+	///////////////
 
 	Dcterms_modified struct {
 		Literal string `json:"literal"`
 	} `json:"dcterms_modified"`
 
+	Dcterms_subject struct {
+		Uri       string `json:"uri"`
+		PrefLabel string `json:"prefLabel"`
+	} `json:"dcterms_subject"`
+
+	Dcterms_educationLevel struct {
+		Uri       string `json:"uri"`
+		PrefLabel string `json:"prefLabel"`
+	} `json:"dcterms_educationLevel"`
+
+	Dcterms_description struct {
+		Uri       string `json:"uri"`
+		PrefLabel string `json:"prefLabel"`
+	} `json:"dcterms_description"`
+
 	Dcterms_title struct {
 		Literal string `json:"literal"`
 	} `json:"dcterms_title"`
+
+	///////////////
 
 	Asn_statementLabel struct {
 		Literal string `json:"literal"`
@@ -30,16 +49,18 @@ type asnjson struct {
 		Literal string `json:"literal"`
 	} `json:"asn_statementNotation"`
 
-	Cls string `json:"cls"`
-
-	Text string `json:"text"`
-
-	Children []asnjson `json:"children"`
-
 	Asn_skillEmbodied struct {
 		Uri       string `json:"uri"`
 		PrefLabel string `json:"prefLabel"`
 	} `json:"asn_skillEmbodied"`
+
+	///////////////
+
+	Cls string `json:"cls"`
+
+	Text string `json:"text"`
+
+	Children []string `json:"children"`
 }
 
 func nodeProcess(data []byte, outdir string) {
@@ -52,15 +73,31 @@ func nodeProcess(data []byte, outdir string) {
 	out := ""
 
 	tool.ScanNode(data, func(i int, id, block string) bool {
+
 		aj := asnjson{}
-		aj.Id = id
+		aj.Id = gjson.Get(block, "id").String()
+
 		aj.Dcterms_modified.Literal = gjson.Get(block, "created_at").String()
+		aj.Dcterms_title.Literal = gjson.Get(block, "title").String()
+
+		aj.Asn_statementLabel.Literal = gjson.Get(block, "doc.typeName").String()
+		aj.Asn_statementNotation.Literal = gjson.Get(block, "code").String()
+		// aj.Asn_skillEmbodied.Uri = gjson.Get(block, "").String()
+		// aj.Asn_skillEmbodied.PrefLabel = gjson.Get(block, "").String()
+
+		// aj.Cls = gjson.Get(block, "").String()
+		aj.Text = gjson.Get(block, "text").String()
+		for _, c := range gjson.Get(block, "children").Array() {
+			aj.Children = append(aj.Children, c.String())
+		}
+
+		////////////////////////////////////////////////////////////////
 
 		if bytes, err := json.Marshal(aj); err == nil {
 			parts = append(parts, string(bytes))
 		}
 
-		if i == 10 {
+		if i == 5 {
 			return false
 		}
 		return true

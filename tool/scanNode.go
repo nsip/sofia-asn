@@ -5,9 +5,9 @@ import (
 	"strings"
 )
 
-func ScanNode(bytes []byte, f func(i int, id, block string) bool) {
+func ScanNode(data []byte, f func(i int, id, block string) bool) {
 
-	js := string(bytes)
+	js := string(data)
 	r := regexp.MustCompile(`"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}":`)
 	pGrp := r.FindAllStringIndex(js, -1)
 	// fmt.Println(len(pGrp), js[pGrp[0][0]:pGrp[0][1]])

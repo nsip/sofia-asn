@@ -7,27 +7,27 @@ import (
 )
 
 func TestParseMeta(t *testing.T) {
-	bytes, err := os.ReadFile("../data/metadata.pretty.json")
+	data, err := os.ReadFile("../data/metadata.pretty.json")
 	if err != nil {
 		panic(err)
 	}
-	mMeta := parseMeta(string(bytes))
+	mMeta := parseMeta(string(data))
 	for k, v := range mMeta {
 		fmt.Println(k, v)
 	}
 }
 
 func TestNodeProcess(t *testing.T) {
-	bytes, err := os.ReadFile("../data/node.pretty.json")
+	data, err := os.ReadFile("../data/node.pretty.json")
 	if err != nil {
 		panic(err)
 	}
 
-	bytesMeta, err := os.ReadFile("../data/metadata.pretty.json")
+	dataMeta, err := os.ReadFile("../data/metadata.pretty.json")
 	if err != nil {
 		panic(err)
 	}
-	mMeta := parseMeta(string(bytesMeta))
+	mMeta := parseMeta(string(dataMeta))
 
-	nodeProcess(bytes, "http://rdf.curriculum.edu.au/202110/", mMeta, "out")
+	nodeProcess(data, "http://rdf.curriculum.edu.au/202110/", mMeta, "out")
 }
