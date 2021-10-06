@@ -113,7 +113,8 @@ func GetAncestorTitle(mCodeParent map[string]string, code, group string) string 
 		// log.Fatalln("[group] can only be 'LA', 'AS', 'CCP', 'GC'")
 	}
 
-	for _, a := range GetCodeAncestors(mCodeParent, code) {
+	ancestors := GetCodeAncestors(mCodeParent, code)
+	for _, a := range append(ancestors, code) {
 		if title, ok := m[a]; ok {
 			return title
 		}
@@ -145,8 +146,8 @@ var (
 		"DL":    "Digital Literacy",
 		"ENG":   "English",
 		"EU":    "Ethical Understanding",
-		"HAS":   "HASS",
-		"HPE":   "HPE",
+		"HAS":   "Humanities and Social Sciences",
+		"HPE":   "Health and Physical Education",
 		"IU":    "Intercultural Understanding",
 		"L":     "National Literacy Learning Progression",
 		"LAN":   "Languages",
