@@ -25,7 +25,7 @@ func TestGetAllCode(t *testing.T) {
 	ancestors = GetCodeAncestors(mCodeParent, code)
 	fmt.Println(ancestors)
 
-	fmt.Println(GetAncestorTitle(mCodeParent, "AC9E2LE01_E2", "LA"))
+	fmt.Println(GetAncestorTitle(mCodeParent, "ASMATY9L", ""))
 	fmt.Println(GetAncestorTitle(mCodeParent, code, ""))
 
 	// for k := range mCodeTitle1 {

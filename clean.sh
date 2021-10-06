@@ -2,8 +2,8 @@
 
 set -e
 
-rm -rf ./partition/partition
-rm -rf ./partition/out
+rm ./partition/partition
+rm -r ./partition/out
 
-rm -rf ./asn-json/asn-json
-rm -rf ./asn-json/out
+rm ./asn-json/asn-json
+rm -r ./asn-json/out
