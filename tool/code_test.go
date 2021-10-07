@@ -28,6 +28,8 @@ func TestGetAllCode(t *testing.T) {
 	fmt.Println(GetAncestorTitle(mCodeParent, "ASMATY9L", ""))
 	fmt.Println(GetAncestorTitle(mCodeParent, code, ""))
 
+	fmt.Println(GetCodeAncestor(mCodeParent, code, 0))
+
 	// for k := range mCodeTitle1 {
 	// 	p := GetCodeAncestors(mCodeParent, k)[0]
 	// 	if p == "GC" {

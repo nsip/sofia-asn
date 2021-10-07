@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -94,7 +95,7 @@ type asnjson struct {
 		Language string `json:"language"` // boilerplate
 	} `json:"asn_statementNotation"`
 
-	Asn_skillEmbodied struct {
+	Asn_skillEmbodied []struct {
 		Uri       string `json:"uri"`       // Predicate
 		PrefLabel string `json:"prefLabel"` // Predicate
 	} `json:"asn_skillEmbodied"`
@@ -107,14 +108,14 @@ type asnjson struct {
 		Uri string `json:"uri"` // boilerplate
 	} `json:"asn_indexingStatus"`
 
-	Asn_hasLevel struct {
+	Asn_hasLevel []struct {
 		Uri       string `json:"uri"`       // Predicate
 		PrefLabel string `json:"prefLabel"` // Predicate
 	} `json:"asn_hasLevel"`
 
 	///////////////
 
-	Dc_relation struct {
+	Dc_relation []struct {
 		Uri       string `json:"uri"`       // Predicate
 		PrefLabel string `json:"prefLabel"` // Predicate
 	} `json:"dc_relation"`
@@ -147,7 +148,20 @@ func yearsSplit(yearstr string) (ret []string) {
 	return
 }
 
-func nodeProcess(data []byte, outdir, sofiaTreeFile string) {
+func scanIdTitle(data []byte) map[string]string {
+	m := make(map[string]string)
+	tool.ScanNode(data, func(i int, id, block string) bool {
+		e := bytes.LastIndexAny(data, "}")
+		data = data[:e+1]
+		uid := gjson.Get(block, "id").String()
+		title := gjson.Get(block, "title").String()
+		m[uid] = title
+		return true
+	})
+	return m
+}
+
+func nodeProcess(data []byte, outdir, sofiaTreeFile, pref4children string) {
 
 	e := bytes.LastIndexAny(data, "}")
 	data = data[:e+1]
@@ -162,13 +176,15 @@ func nodeProcess(data []byte, outdir, sofiaTreeFile string) {
 	}
 	mCodeParent := tool.GetCodeParentMap(dataTree)
 
+	mUidTitle := scanIdTitle(data)
+
 	tool.ScanNode(data, func(i int, id, block string) bool {
 
 		code := gjson.Get(block, "code").String()
 
 		laTitle := tool.GetAncestorTitle(mCodeParent, code, "")
 		if laTitle == "" {
-			fmt.Println("missing:", code)
+			// fmt.Println("Learning area missing:", code)
 		}
 		subUri, okSubUri := mLaUri[laTitle]
 
@@ -179,6 +195,17 @@ func nodeProcess(data []byte, outdir, sofiaTreeFile string) {
 		}
 
 		// fmt.Println(i, id, code)
+
+		nodeType := tool.GetCodeAncestor(mCodeParent, code, 0)
+
+		mConnUri := make(map[string]string)
+		result := gjson.Get(block, "connections.*")
+		if result.IsArray() {
+			for _, rUri := range result.Array() {
+				uri := rUri.String()
+				mConnUri[uri] = mUidTitle[uri]
+			}
+		}
 
 		////////////////////////////////////////////////////////
 
@@ -192,7 +219,7 @@ func nodeProcess(data []byte, outdir, sofiaTreeFile string) {
 		aj.Asn_statementNotation.Literal = gjson.Get(block, "code").String()
 		aj.Text = gjson.Get(block, "text").String()
 		for _, c := range gjson.Get(block, "children").Array() {
-			aj.Children = append(aj.Children, c.String())
+			aj.Children = append(aj.Children, pref4children+c.String())
 		}
 
 		// Derived
@@ -224,12 +251,54 @@ func nodeProcess(data []byte, outdir, sofiaTreeFile string) {
 		aj.Leaf = "true"
 
 		// Predicate
-		aj.Asn_skillEmbodied.Uri = ""       //
-		aj.Asn_skillEmbodied.PrefLabel = "" //
-		aj.Dc_relation.Uri = ""             // if
-		aj.Dc_relation.PrefLabel = ""       // if
-		aj.Asn_hasLevel.Uri = ""            //
-		aj.Asn_hasLevel.PrefLabel = ""      //
+		switch nodeType {
+		case "GC":
+			for uri, title := range mConnUri {
+				aj.Asn_skillEmbodied = append(aj.Asn_skillEmbodied, struct {
+					Uri       string "json:\"uri\""
+					PrefLabel string "json:\"prefLabel\""
+				}{
+					Uri:       uri,
+					PrefLabel: title,
+				})
+			}
+
+		case "CCP":
+			for uri, title := range mConnUri {
+				aj.Dc_relation = append(aj.Dc_relation, struct {
+					Uri       string "json:\"uri\""
+					PrefLabel string "json:\"prefLabel\""
+				}{
+					Uri:       uri,
+					PrefLabel: title,
+				})
+			}
+
+		case "LA":
+			for uri, title := range mConnUri {
+				aj.Dc_relation = append(aj.Dc_relation, struct {
+					Uri       string "json:\"uri\""
+					PrefLabel string "json:\"prefLabel\""
+				}{
+					Uri:       uri,
+					PrefLabel: title,
+				})
+			}
+
+		case "AS":
+			for uri, title := range mConnUri {
+				aj.Asn_hasLevel = append(aj.Asn_hasLevel, struct {
+					Uri       string "json:\"uri\""
+					PrefLabel string "json:\"prefLabel\""
+				}{
+					Uri:       uri,
+					PrefLabel: title,
+				})
+			}
+
+		default:
+			log.Printf("'%v' is not one of [GC CCP LA AS]", nodeType)
+		}
 
 		////////////////////////////////////////////////////////////////
 

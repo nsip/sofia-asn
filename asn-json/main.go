@@ -15,5 +15,5 @@ func main() {
 		panic(err)
 	}
 
-	nodeProcess(data, "./out/", "../data/tree.pretty.json")
+	nodeProcess(data, "./out/", "../data/tree.pretty.json", "http://rdf.curriculum.edu.au/202110/")
 }

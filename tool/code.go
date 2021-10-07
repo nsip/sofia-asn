@@ -97,6 +97,13 @@ func GetCodeAncestors(mCodeParent map[string]string, code string) (ancestors []s
 	return
 }
 
+func GetCodeAncestor(mCodeParent map[string]string, code string, level int) string {
+	ancestors := GetCodeAncestors(mCodeParent, code)
+	ancestors = append([]string{code}, ancestors...)
+	index := len(ancestors) - level - 1
+	return ancestors[index]
+}
+
 func GetAncestorTitle(mCodeParent map[string]string, code, group string) string {
 
 	m := mCodeTitle1
