@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 
+	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 	"github.com/tidwall/gjson"
 )
@@ -161,7 +163,7 @@ func scanIdTitle(data []byte) map[string]string {
 	return m
 }
 
-func nodeProcess(data []byte, outdir, sofiaTreeFile, pref4children string) {
+func nodeProcess(data []byte, outdir, outname, sofiaTreeFile, pref4children string) {
 
 	e := bytes.LastIndexAny(data, "}")
 	data = data[:e+1]
@@ -313,5 +315,74 @@ func nodeProcess(data []byte, outdir, sofiaTreeFile, pref4children string) {
 	})
 
 	out = "[" + strings.Join(parts, ",") + "]"
-	os.WriteFile(fmt.Sprintf("./%s/asn.json", outdir), []byte(out), os.ModePerm)
+	if !strings.HasSuffix(outname, ".json") {
+		outname += ".json"
+	}
+	os.WriteFile(fmt.Sprintf("./%s/%s", outdir, outname), []byte(out), os.ModePerm)
+}
+
+func childrenRepl(nodefile, outpath string) (replaced bool) {
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	r, err := os.Open(nodefile)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	result, ok := jt.ScanObject(ctx, r, true, true, jt.OUT_FMT)
+	if !ok {
+		log.Fatalln("node file is NOT JSON array")
+	}
+
+	mIdBlock := make(map[string]string)
+
+	for r := range result {
+		if r.Err != nil {
+			log.Fatalln(r.Err)
+		}
+		id := gjson.Get(r.Obj, "Id").String()
+		mIdBlock[id] = r.Obj
+	}
+
+	fmt.Println(len(mIdBlock))
+
+	mIdBlockExp := make(map[string]string)
+
+	for id, block := range mIdBlock {
+		rChildren := gjson.Get(block, "children")
+		if rChildren.IsArray() {
+			newChild := block
+			for _, r := range rChildren.Array() {
+				child := r.String()
+				// fmt.Println(id)
+				// fmt.Println(child)
+				// fmt.Println(mIdBlock[child])
+
+				newChild = strings.ReplaceAll(newChild, "\""+child+"\"", mIdBlock[child])
+				replaced = true
+			}
+			mIdBlockExp[id] = newChild
+		} else {
+			mIdBlockExp[id] = block
+		}
+	}
+
+	fmt.Println(len(mIdBlockExp))
+
+	sb := strings.Builder{}
+	sb.WriteString("[")
+	idx := 0
+	for _, block := range mIdBlockExp {
+		sb.WriteString(block)
+		if idx < len(mIdBlockExp)-1 {
+			sb.WriteString(",")
+		}
+		idx++
+	}
+	sb.WriteString("]")
+
+	os.WriteFile(outpath, []byte(sb.String()), os.ModePerm)
+	return replaced
 }
