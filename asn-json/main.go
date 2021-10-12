@@ -26,18 +26,15 @@ func main() {
 
 	mIdBlock, _ := getIdBlock(outpath)
 
+	inpath4exp := outpath
+	path4exp := "./out/asnexp.json"
+
+	outexp := childrenRepl(inpath4exp, mIdBlock)
+	os.WriteFile(path4exp, []byte(outexp), os.ModePerm)
+
 	/////
 
-	inpath4exp := outpath
-	outpath4exp := "./out/asnexp.json"
-
-	N := 0
-AGAIN:
-	repl := childrenRepl(inpath4exp, outpath4exp, mIdBlock)
-	if repl && N < 100 {
-		inpath4exp = outpath4exp
-		outpath4exp = outpath4exp[:len(outpath4exp)-5] + "1.json"
-		N++
-		goto AGAIN
-	}
+	// path4final := "./out/asnfinal.json"
+	// outfinal := rmSingleLeaf(outexp)
+	// os.WriteFile(path4final, []byte(outfinal), os.ModePerm)
 }

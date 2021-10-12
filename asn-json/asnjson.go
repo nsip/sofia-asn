@@ -115,6 +115,13 @@ type asnjson struct {
 		PrefLabel string `json:"prefLabel"` // Predicate
 	} `json:"asn_hasLevel"`
 
+	Asn_crossSubjectReference []struct {
+		Uri       string `json:"uri"`       // Predicate
+		PrefLabel string `json:"prefLabel"` // Predicate
+	} `json:"asn_crossSubjectReference"`
+
+	Asn_conceptTerm string `json:"asn_conceptTerm"` // tag key
+
 	///////////////
 
 	Dc_relation []struct {
@@ -209,6 +216,9 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 			}
 		}
 
+		rstChildren := gjson.Get(block, "children")
+		rstTags := gjson.Get(block, "tags")
+
 		////////////////////////////////////////////////////////
 
 		aj := asnjson{}
@@ -220,7 +230,7 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 		aj.Asn_statementLabel.Literal = gjson.Get(block, "doc.typeName").String()
 		aj.Asn_statementNotation.Literal = gjson.Get(block, "code").String()
 		aj.Text = gjson.Get(block, "text").String()
-		for _, c := range gjson.Get(block, "children").Array() {
+		for _, c := range rstChildren.Array() {
 			aj.Children = append(aj.Children, pref4children+c.String())
 		}
 
@@ -249,25 +259,20 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 		aj.Asn_indexingStatus.Uri = `http://purl.org/ASN/scheme/ASNIndexingStatus/No`
 		aj.Dcterms_rights.Literal = `©Copyright Australian Curriculum, Assessment and Reporting Authority`
 		aj.Dcterms_rightsHolder.Literal = `Australian Curriculum, Assessment and Reporting Authority`
-		aj.Cls = "folder"
-		aj.Leaf = "true"
+		if rstChildren.IsArray() {
+			aj.Cls = "folder"
+		} else {
+			aj.Leaf = "true"
+		}
+		if rstTags.IsObject() {
+			aj.Asn_conceptTerm = "SCIENCE_TEACHER_BACKGROUND_INFORMATION"
+		}
 
 		// Predicate
 		switch nodeType {
 		case "GC":
 			for uri, title := range mConnUri {
 				aj.Asn_skillEmbodied = append(aj.Asn_skillEmbodied, struct {
-					Uri       string "json:\"uri\""
-					PrefLabel string "json:\"prefLabel\""
-				}{
-					Uri:       uri,
-					PrefLabel: title,
-				})
-			}
-
-		case "CCP":
-			for uri, title := range mConnUri {
-				aj.Dc_relation = append(aj.Dc_relation, struct {
 					Uri       string "json:\"uri\""
 					PrefLabel string "json:\"prefLabel\""
 				}{
@@ -290,6 +295,17 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 		case "AS":
 			for uri, title := range mConnUri {
 				aj.Asn_hasLevel = append(aj.Asn_hasLevel, struct {
+					Uri       string "json:\"uri\""
+					PrefLabel string "json:\"prefLabel\""
+				}{
+					Uri:       uri,
+					PrefLabel: title,
+				})
+			}
+
+		case "CCP":
+			for uri, title := range mConnUri {
+				aj.Asn_crossSubjectReference = append(aj.Asn_crossSubjectReference, struct {
 					Uri       string "json:\"uri\""
 					PrefLabel string "json:\"prefLabel\""
 				}{
@@ -321,31 +337,37 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 	os.WriteFile(fmt.Sprintf("./%s/%s", outdir, outname), []byte(out), os.ModePerm)
 }
 
+// asnjson need to be formatted
 func trimNodeProc(asnjson string) string {
 
-	rNullRemove := regexp.MustCompile(`,?(\n)(\s)+"[^"]+":(\s)+null,?`)
-	removed := rNullRemove.ReplaceAllStringFunc(asnjson, func(s string) string {
-		if s[0] == ',' && s[len(s)-1] == ',' {
-			return ","
-		}
-		return ""
-	})
+	removed := asnjson
+	rNullRemove := regexp.MustCompile(`[,{](\n)(\s)+"[^"]+":(\s)+null[,\n]`)
+	rEmptyStrRemove := regexp.MustCompile(`[,{](\n)(\s)+"[^"]+":(\s)+""[,\n]`)
+	rEmptyObjRemove := regexp.MustCompile(`[,{](\n)(\s)+"[^"]+":(\s)+\{[\n\s]*\}[,\n]`)
 
-	rEmptyStrRemove := regexp.MustCompile(`,?(\n)(\s)+"[^"]+":(\s)+"",?`)
-	removed = rEmptyStrRemove.ReplaceAllStringFunc(removed, func(s string) string {
-		if s[0] == ',' && s[len(s)-1] == ',' {
-			return ","
+	for _, re := range []*regexp.Regexp{rNullRemove, rEmptyStrRemove, rEmptyObjRemove} {
+	AGAIN:
+		rm := false
+		removed = re.ReplaceAllStringFunc(removed, func(s string) string {
+			rm = true
+			if s[0] == '{' && s[len(s)-1] == ',' {
+				return "{"
+			}
+			if s[0] == '{' && s[len(s)-1] == '\n' {
+				return "{"
+			}
+			if s[0] == ',' && s[len(s)-1] == ',' {
+				return ","
+			}
+			if s[0] == ',' && s[len(s)-1] == '\n' {
+				return "\n"
+			}
+			return s
+		})
+		if rm {
+			goto AGAIN
 		}
-		return ""
-	})
-
-	rEmptyObjRemove := regexp.MustCompile(`,?(\n)(\s)+"[^"]+":(\s)+\{(\n)(\s)+\}`)
-	removed = rEmptyObjRemove.ReplaceAllStringFunc(removed, func(s string) string {
-		if s[0] == ',' && s[len(s)-1] == ',' {
-			return ","
-		}
-		return ""
-	})
+	}
 
 	return removed
 }
@@ -395,7 +417,7 @@ func childrenId(cBlock string) (cid []string) {
 	return
 }
 
-func childrenRepl(inpath, outpath string, mIdBlock map[string]string) (repl bool) {
+func childrenRepl(inpath string, mIdBlock map[string]string) string {
 
 	data, err := os.ReadFile(inpath)
 	if err != nil {
@@ -403,8 +425,12 @@ func childrenRepl(inpath, outpath string, mIdBlock map[string]string) (repl bool
 	}
 
 	rChildren := regexp.MustCompile(`"children":(\s)+\[(\n\s+"http[^"]+",?)+\n\s+\]`)
+	js := string(data)
+	repl := false
 
-	js := rChildren.ReplaceAllStringFunc(string(data), func(s string) string {
+AGAIN:
+	repl = false
+	js = rChildren.ReplaceAllStringFunc(js, func(s string) string {
 		for _, id := range childrenId(s) {
 			id = id[1 : len(id)-1]
 			if block, ok := mIdBlock[id]; ok {
@@ -415,6 +441,37 @@ func childrenRepl(inpath, outpath string, mIdBlock map[string]string) (repl bool
 		return s
 	})
 
-	os.WriteFile(outpath, []byte(jt.FmtStr(js, "  ")), os.ModePerm)
-	return repl
+	if repl {
+		goto AGAIN
+	}
+
+	return jt.FmtStr(js, "  ")
+}
+
+func rmSingleLeaf(input string) string {
+
+	r := strings.NewReader(input)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	nodes := []string{}
+
+	cRst, _ := jt.ScanObject(ctx, r, true, true, jt.OUT_FMT)
+	for rst := range cRst {
+		if rst.Err != nil {
+			log.Fatalln(rst.Err)
+		}
+		block := rst.Obj
+
+		rstLeaf := gjson.Get(block, "leaf")
+		// fmt.Println(rstLeaf.String())
+
+		if rstLeaf.String() != "true" {
+			nodes = append(nodes, block)
+		}
+	}
+
+	js := "[" + strings.Join(nodes, ",") + "]"
+	return jt.FmtStr(js, "  ")
 }
