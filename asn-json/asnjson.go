@@ -163,7 +163,7 @@ func scanIdTitle(data []byte) map[string]string {
 	return m
 }
 
-func nodeProcess(data []byte, outdir, outname, sofiaTreeFile, pref4children string) {
+func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string) {
 
 	e := bytes.LastIndexAny(data, "}")
 	data = data[:e+1]
@@ -308,20 +308,49 @@ func nodeProcess(data []byte, outdir, outname, sofiaTreeFile, pref4children stri
 			parts = append(parts, string(bytes))
 		}
 
-		if i == 10000000 {
-			return false
-		}
 		return true
 	})
 
-	out = "[" + strings.Join(parts, ",") + "]"
+	out = "[" + strings.Join(parts, ",") + "]" // combine whole
+	out = jt.FmtStr(out, "  ")                 // format json
+	out = trimNodeProc(out)                    // remove empty object, empty string
+
 	if !strings.HasSuffix(outname, ".json") {
 		outname += ".json"
 	}
 	os.WriteFile(fmt.Sprintf("./%s/%s", outdir, outname), []byte(out), os.ModePerm)
 }
 
-func childrenRepl(nodefile, outpath string) (replaced bool) {
+func trimNodeProc(asnjson string) string {
+
+	rNullRemove := regexp.MustCompile(`,?(\n)(\s)+"[^"]+":(\s)+null,?`)
+	removed := rNullRemove.ReplaceAllStringFunc(asnjson, func(s string) string {
+		if s[0] == ',' && s[len(s)-1] == ',' {
+			return ","
+		}
+		return ""
+	})
+
+	rEmptyStrRemove := regexp.MustCompile(`,?(\n)(\s)+"[^"]+":(\s)+"",?`)
+	removed = rEmptyStrRemove.ReplaceAllStringFunc(removed, func(s string) string {
+		if s[0] == ',' && s[len(s)-1] == ',' {
+			return ","
+		}
+		return ""
+	})
+
+	rEmptyObjRemove := regexp.MustCompile(`,?(\n)(\s)+"[^"]+":(\s)+\{(\n)(\s)+\}`)
+	removed = rEmptyObjRemove.ReplaceAllStringFunc(removed, func(s string) string {
+		if s[0] == ',' && s[len(s)-1] == ',' {
+			return ","
+		}
+		return ""
+	})
+
+	return removed
+}
+
+func getIdBlock(nodefile string) (mIdBlock, mIdBlockLeaf map[string]string) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -336,7 +365,8 @@ func childrenRepl(nodefile, outpath string) (replaced bool) {
 		log.Fatalln("node file is NOT JSON array")
 	}
 
-	mIdBlock := make(map[string]string)
+	mIdBlock = make(map[string]string)
+	mIdBlockLeaf = make(map[string]string)
 
 	for r := range result {
 		if r.Err != nil {
@@ -344,45 +374,47 @@ func childrenRepl(nodefile, outpath string) (replaced bool) {
 		}
 		id := gjson.Get(r.Obj, "Id").String()
 		mIdBlock[id] = r.Obj
+
+		hasChildren := gjson.Get(r.Obj, "children").IsArray()
+		if !hasChildren {
+			mIdBlockLeaf[id] = r.Obj
+		}
 	}
 
-	fmt.Println(len(mIdBlock))
+	return
+}
 
-	mIdBlockExp := make(map[string]string)
+func childrenId(cBlock string) (cid []string) {
+	s := strings.Index(cBlock, "[")
+	e := strings.LastIndex(cBlock, "]")
+	cBlock = cBlock[s+1 : e]
+	cBlock = strings.Trim(cBlock, " \n\t")
+	for _, id := range strings.Split(cBlock, ",") {
+		cid = append(cid, strings.Trim(id, " \n\t"))
+	}
+	return
+}
 
-	for id, block := range mIdBlock {
-		rChildren := gjson.Get(block, "children")
-		if rChildren.IsArray() {
-			newChild := block
-			for _, r := range rChildren.Array() {
-				child := r.String()
-				// fmt.Println(id)
-				// fmt.Println(child)
-				// fmt.Println(mIdBlock[child])
+func childrenRepl(inpath, outpath string, mIdBlock map[string]string) (repl bool) {
 
-				newChild = strings.ReplaceAll(newChild, "\""+child+"\"", mIdBlock[child])
-				replaced = true
+	data, err := os.ReadFile(inpath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	rChildren := regexp.MustCompile(`"children":(\s)+\[(\n\s+"http[^"]+",?)+\n\s+\]`)
+
+	js := rChildren.ReplaceAllStringFunc(string(data), func(s string) string {
+		for _, id := range childrenId(s) {
+			id = id[1 : len(id)-1]
+			if block, ok := mIdBlock[id]; ok {
+				s = strings.ReplaceAll(s, "\""+id+"\"", block)
+				repl = true
 			}
-			mIdBlockExp[id] = newChild
-		} else {
-			mIdBlockExp[id] = block
 		}
-	}
+		return s
+	})
 
-	fmt.Println(len(mIdBlockExp))
-
-	sb := strings.Builder{}
-	sb.WriteString("[")
-	idx := 0
-	for _, block := range mIdBlockExp {
-		sb.WriteString(block)
-		if idx < len(mIdBlockExp)-1 {
-			sb.WriteString(",")
-		}
-		idx++
-	}
-	sb.WriteString("]")
-
-	os.WriteFile(outpath, []byte(sb.String()), os.ModePerm)
-	return replaced
+	os.WriteFile(outpath, []byte(jt.FmtStr(js, "  ")), os.ModePerm)
+	return repl
 }

@@ -27,3 +27,15 @@ func TestYearSplit(t *testing.T) {
 		fmt.Println(mYrlvlUri[y])
 	}
 }
+
+func TestMapSet(t *testing.T) {
+	m := map[string]string{
+		"a": "A",
+		"b": "B",
+	}
+	fmt.Println("m:", m)
+	mm := m
+	mm["c"] = "C"
+	fmt.Println("m:", m)
+	fmt.Println("mm:", mm)
+}
