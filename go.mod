@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/digisan/gotk v0.0.38
-	github.com/digisan/json-tool v0.0.12
-	github.com/tidwall/gjson v1.9.3
+	github.com/digisan/json-tool v0.0.13
+	github.com/tidwall/gjson v1.9.4
 	github.com/tidwall/sjson v1.2.2
 )
 

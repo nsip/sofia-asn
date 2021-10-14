@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 type AsnJsonLd struct {
 }
@@ -44,5 +47,12 @@ var (
 )
 
 func main() {
-	fmt.Println("test")
+
+	data, err := os.ReadFile("../asn-json/out/asnroot.json")
+	if err != nil {
+		panic(err)
+	}
+	js := string(data)
+
+	fmt.Println(len(js))
 }

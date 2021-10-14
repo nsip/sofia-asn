@@ -327,49 +327,14 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 		return true
 	})
 
-	out = "[" + strings.Join(parts, ",") + "]" // combine whole
-	out = jt.FmtStr(out, "  ")                 // format json
-	out = trimNodeProc(out)                    // remove empty object, empty string
+	out = "[" + strings.Join(parts, ",") + "]"       // combine whole
+	out = jt.FmtStr(out, "  ")                       // format json
+	out = jt.TrimFields(out, true, true, true, true) // remove empty object, string, array
 
 	if !strings.HasSuffix(outname, ".json") {
 		outname += ".json"
 	}
 	os.WriteFile(fmt.Sprintf("./%s/%s", outdir, outname), []byte(out), os.ModePerm)
-}
-
-// asnjson need to be formatted
-func trimNodeProc(asnjson string) string {
-
-	removed := asnjson
-	rNullRemove := regexp.MustCompile(`[,{](\n)(\s)+"[^"]+":(\s)+null[,\n]`)
-	rEmptyStrRemove := regexp.MustCompile(`[,{](\n)(\s)+"[^"]+":(\s)+""[,\n]`)
-	rEmptyObjRemove := regexp.MustCompile(`[,{](\n)(\s)+"[^"]+":(\s)+\{[\n\s]*\}[,\n]`)
-
-	for _, re := range []*regexp.Regexp{rNullRemove, rEmptyStrRemove, rEmptyObjRemove} {
-	AGAIN:
-		rm := false
-		removed = re.ReplaceAllStringFunc(removed, func(s string) string {
-			rm = true
-			if s[0] == '{' && s[len(s)-1] == ',' {
-				return "{"
-			}
-			if s[0] == '{' && s[len(s)-1] == '\n' {
-				return "{"
-			}
-			if s[0] == ',' && s[len(s)-1] == ',' {
-				return ","
-			}
-			if s[0] == ',' && s[len(s)-1] == '\n' {
-				return "\n"
-			}
-			return s
-		})
-		if rm {
-			goto AGAIN
-		}
-	}
-
-	return removed
 }
 
 func getIdBlock(nodefile string) (mIdBlock, mIdBlockLeaf map[string]string) {
