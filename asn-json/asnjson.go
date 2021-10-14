@@ -337,16 +337,12 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 	os.WriteFile(fmt.Sprintf("./%s/%s", outdir, outname), []byte(out), os.ModePerm)
 }
 
-func getIdBlock(nodefile string) (mIdBlock, mIdBlockLeaf map[string]string) {
+func getIdBlock(js string) (mIdBlock, mIdBlockLeaf map[string]string) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	r, err := os.Open(nodefile)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
+	r := strings.NewReader(js)
 	result, ok := jt.ScanObject(ctx, r, true, true, jt.OUT_FMT)
 	if !ok {
 		log.Fatalln("node file is NOT JSON array")
@@ -413,30 +409,33 @@ AGAIN:
 	return jt.FmtStr(js, "  ")
 }
 
-func rmSingleLeaf(input string) string {
+func getRootWholeObject(allNestedSet string) string {
 
-	r := strings.NewReader(input)
+	rId := regexp.MustCompile(`"Id": "http[^"]+"`)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	mIdCnt := make(map[string]int)
+	rId.ReplaceAllStringFunc(allNestedSet, func(s string) string {
+		mIdCnt[s]++
+		return s
+	})
 
-	nodes := []string{}
+	// fmt.Println(len(mIdCnt))
 
-	cRst, _ := jt.ScanObject(ctx, r, true, true, jt.OUT_FMT)
-	for rst := range cRst {
-		if rst.Err != nil {
-			log.Fatalln(rst.Err)
-		}
-		block := rst.Obj
-
-		rstLeaf := gjson.Get(block, "leaf")
-		// fmt.Println(rstLeaf.String())
-
-		if rstLeaf.String() != "true" {
-			nodes = append(nodes, block)
+	mIdRootCnt := make(map[string]int)
+	for idstr, cnt := range mIdCnt {
+		if cnt == 1 {
+			mIdRootCnt[idstr] = cnt
 		}
 	}
 
-	js := "[" + strings.Join(nodes, ",") + "]"
-	return jt.FmtStr(js, "  ")
+	mIdBlock, _ := getIdBlock(allNestedSet)
+
+	for idstr := range mIdRootCnt {
+		s := strings.Index(idstr, "http:")
+		e := strings.LastIndex(idstr, "\"")
+		id := idstr[s:e]
+		return mIdBlock[id]
+	}
+
+	return ""
 }
