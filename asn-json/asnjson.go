@@ -170,6 +170,84 @@ func scanIdTitle(data []byte) map[string]string {
 	return m
 }
 
+func treeProc(data []byte, outdir, outname, uri4id, la, sofiaTreeFile, pref4children string) {
+
+	js := string(data)
+	uri4id = strings.TrimSuffix(uri4id, "/")
+
+	fSf := fmt.Sprintf
+
+	fetchValue := func(kvstr string) string {
+		start := strings.Index(kvstr, `: "`) + 3
+		end := strings.LastIndex(kvstr, `"`)
+		return kvstr[start:end]
+	}
+
+	// Id
+	rId := regexp.MustCompile(`"uuid":\s"[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}"`)
+	js = rId.ReplaceAllStringFunc(js, func(s string) string {
+		return fSf(`"Id": "%s/%s"`, uri4id, fetchValue(s))
+	})
+
+	// created_at
+	rCreated := regexp.MustCompile(`"created_at":\s"[^"]+"`)
+	js = rCreated.ReplaceAllStringFunc(js, func(s string) string {
+		return fSf(`"dcterms_modified": { "literal": "%s" }`, fetchValue(s))
+	})
+
+	// title
+	rTitle := regexp.MustCompile(`"title":\s".+",?\n`)
+	js = rTitle.ReplaceAllStringFunc(js, func(s string) string {
+		suffix0, suffix1 := "", ""
+		if s[len(s)-1] == '\n' {
+			suffix0 = "\n"
+		}
+		if s[len(s)-2] == ',' {
+			suffix1 = ","
+		}
+		return fSf(`"dcterms_title": { "language": "%s", "literal": "%s" }%s%s`, "en-au", fetchValue(s), suffix1, suffix0)
+	})
+
+	// doc.typeName
+	rDocType := regexp.MustCompile(`"doc":\s{\n\s*"typeName":\s"[^"]+"\n\s*},?\n`)
+	js = rDocType.ReplaceAllStringFunc(js, func(s string) string {
+		suffix0, suffix1 := "", ""
+		if s[len(s)-1] == '\n' {
+			suffix0 = "\n"
+		}
+		if s[len(s)-2] == ',' {
+			suffix1 = ","
+		}
+		return fmt.Sprintf(`"asn_statementLabel": { "language": "%s", "literal": "%s" }%s%s`, "en-au", fetchValue(s), suffix1, suffix0)
+	})
+
+	// code
+	rCode := regexp.MustCompile(`"code":\s"[^"]+"`)
+	js = rCode.ReplaceAllStringFunc(js, func(s string) string {
+		return fmt.Sprintf(`"asn_statementNotation": { "language": "%s", "literal": "%s" }`, "en-au", fetchValue(s))
+	})
+
+	// text
+	rText := regexp.MustCompile(`"text":\s".+",?\n`)
+	js = rText.ReplaceAllStringFunc(js, func(s string) string {
+		suffix0, suffix1 := "", ""
+		if s[len(s)-1] == '\n' {
+			suffix0 = "\n"
+		}
+		if s[len(s)-2] == ',' {
+			suffix1 = ","
+		}
+		return fSf(`"text": "%s"%s%s`, fetchValue(s), suffix1, suffix0)
+	})
+
+	////////////////////////////////////////////////
+
+	if !strings.HasSuffix(outname, ".json") {
+		outname += ".json"
+	}
+	os.WriteFile(fmt.Sprintf("./%s/%s", outdir, outname), []byte(js), os.ModePerm)
+}
+
 func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string) {
 
 	e := bytes.LastIndexAny(data, "}")

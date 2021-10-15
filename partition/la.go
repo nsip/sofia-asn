@@ -142,6 +142,7 @@ NEXTLA:
 					out, _ = sjson.SetRaw(out, path, bLA)
 				}
 
+				// out = jt.FmtStr(out, "  ")
 				err := os.WriteFile(fmt.Sprintf("./%s/la-%s.json", outdir, la), []byte(out), os.ModePerm)
 				if err != nil {
 					fmt.Println(err)

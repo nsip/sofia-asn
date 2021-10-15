@@ -59,5 +59,6 @@ func nodeProcess(data []byte, uri string, meta map[string]string, outdir string)
 	})
 
 	out = "{" + strings.Join(parts, ",") + "}"
+	// out = jt.FmtStr(out, "  ")
 	os.WriteFile(fmt.Sprintf("./%s/node-meta.json", outdir), []byte(out), os.ModePerm)
 }
