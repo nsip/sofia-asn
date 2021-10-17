@@ -13,6 +13,7 @@ import (
 	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 )
 
 var (
@@ -172,72 +173,135 @@ func scanIdTitle(data []byte) map[string]string {
 
 func treeProc(data []byte, outdir, outname, uri4id, la, sofiaTreeFile, pref4children string) {
 
+	fSf := fmt.Sprintf
+
 	js := string(data)
 	uri4id = strings.TrimSuffix(uri4id, "/")
 
-	fSf := fmt.Sprintf
-
 	fetchValue := func(kvstr string) string {
-		start := strings.Index(kvstr, `: "`) + 3
+		r := regexp.MustCompile(`:\s*"`)
+		loc := r.FindAllStringIndex(kvstr, 1)[0]
+		start := loc[1]
 		end := strings.LastIndex(kvstr, `"`)
 		return kvstr[start:end]
 	}
 
+	setWhenEquals := func(c0, c1 byte) string {
+		if c0 == c1 {
+			return string(c0)
+		}
+		return ""
+	}
+
+	//////
 	// Id
-	rId := regexp.MustCompile(`"uuid":\s"[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}"`)
+	rId := regexp.MustCompile(`"uuid":\s*"[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}"`)
 	js = rId.ReplaceAllStringFunc(js, func(s string) string {
 		return fSf(`"Id": "%s/%s"`, uri4id, fetchValue(s))
 	})
 
 	// created_at
-	rCreated := regexp.MustCompile(`"created_at":\s"[^"]+"`)
+	rCreated := regexp.MustCompile(`"created_at":\s*"[^"]+"`)
 	js = rCreated.ReplaceAllStringFunc(js, func(s string) string {
 		return fSf(`"dcterms_modified": { "literal": "%s" }`, fetchValue(s))
 	})
 
 	// title
-	rTitle := regexp.MustCompile(`"title":\s".+",?\n`)
+	rTitle := regexp.MustCompile(`"title":\s*".+",?\n`)
 	js = rTitle.ReplaceAllStringFunc(js, func(s string) string {
-		suffix0, suffix1 := "", ""
-		if s[len(s)-1] == '\n' {
-			suffix0 = "\n"
-		}
-		if s[len(s)-2] == ',' {
-			suffix1 = ","
-		}
-		return fSf(`"dcterms_title": { "language": "%s", "literal": "%s" }%s%s`, "en-au", fetchValue(s), suffix1, suffix0)
+		sfx0, sfx1 := setWhenEquals(s[len(s)-1], '\n'), setWhenEquals(s[len(s)-2], ',')
+		return fSf(`"dcterms_title": { "language": "%s", "literal": "%s" }%s%s`, "en-au", fetchValue(s), sfx1, sfx0)
 	})
 
 	// doc.typeName
-	rDocType := regexp.MustCompile(`"doc":\s{\n\s*"typeName":\s"[^"]+"\n\s*},?\n`)
+	rDocType := regexp.MustCompile(`"doc":\s*{[\n\s]*"typeName":\s*"[^"]+"[\n\s]*},?\n`)
 	js = rDocType.ReplaceAllStringFunc(js, func(s string) string {
-		suffix0, suffix1 := "", ""
-		if s[len(s)-1] == '\n' {
-			suffix0 = "\n"
-		}
-		if s[len(s)-2] == ',' {
-			suffix1 = ","
-		}
-		return fmt.Sprintf(`"asn_statementLabel": { "language": "%s", "literal": "%s" }%s%s`, "en-au", fetchValue(s), suffix1, suffix0)
+		sfx0, sfx1 := setWhenEquals(s[len(s)-1], '\n'), setWhenEquals(s[len(s)-2], ',')
+		return fSf(`"asn_statementLabel": { "language": "%s", "literal": "%s" }%s%s`, "en-au", fetchValue(s), sfx1, sfx0)
 	})
 
 	// code
-	rCode := regexp.MustCompile(`"code":\s"[^"]+"`)
+	rCode := regexp.MustCompile(`"code":\s*"[^"]+"`)
 	js = rCode.ReplaceAllStringFunc(js, func(s string) string {
-		return fmt.Sprintf(`"asn_statementNotation": { "language": "%s", "literal": "%s" }`, "en-au", fetchValue(s))
+		return fSf(`"asn_statementNotation": { "language": "%s", "literal": "%s" }`, "en-au", fetchValue(s))
 	})
 
 	// text
-	rText := regexp.MustCompile(`"text":\s".+",?\n`)
+	rText := regexp.MustCompile(`"text":\s*".+",?\n`)
 	js = rText.ReplaceAllStringFunc(js, func(s string) string {
-		suffix0, suffix1 := "", ""
-		if s[len(s)-1] == '\n' {
-			suffix0 = "\n"
+		sfx0, sfx1 := setWhenEquals(s[len(s)-1], '\n'), setWhenEquals(s[len(s)-2], ',')
+		return fSf(`"text": "%s"%s%s`, fetchValue(s), sfx1, sfx0)
+	})
+
+	//////
+	// dcterms_subject
+	if subUri, okSubUri := mLaUri[la]; okSubUri {
+		rId4uri := regexp.MustCompile(`"Id":\s*"http[^"]+",?\n`)
+		js = rId4uri.ReplaceAllStringFunc(js, func(s string) string {
+			sfx0, sfx1 := setWhenEquals(s[len(s)-1], '\n'), setWhenEquals(s[len(s)-2], ',')
+			suffix := fSf(`"dcterms_subject": { "prefLabel": "%s", "uri": "%s" }%s%s`, la, subUri, sfx1, sfx0)
+			return s + suffix
+		})
+	}
+
+	// [ dcterms_title, asn_statementLabel ] => dcterms_educationLevel
+	mLvlSiblings, _ := jt.FamilyTree(js)
+	mFieldSibling := jt.GetSiblingPath(js, "dcterms_title", "asn_statementLabel", mLvlSiblings)
+	for fp, sp := range mFieldSibling {
+		if gjson.Get(js, sp+".literal").String() == "Level" {
+			for _, y := range yearsSplit(gjson.Get(js, fp+".literal").String()) {
+				fmt.Println(y)
+				js, _ = sjson.Set(js, jt.NewSibling(fp, "dcterms_educationLevel.uri"), mYrlvlUri[y])
+				js, _ = sjson.Set(js, jt.NewSibling(fp, "dcterms_educationLevel.prefLabel"), y)
+			}
 		}
-		if s[len(s)-2] == ',' {
-			suffix1 = ","
+	}
+
+	// "children" => add "cls": "folder"; else add "leaf": "true"
+	cpaths := jt.GetFieldPaths(js, "children", mLvlSiblings)
+	
+
+	// append some after "Id"
+	rNewId := regexp.MustCompile(`"Id":\s*"http[^"]+",?`)
+	// asn_authorityStatus
+	js = rNewId.ReplaceAllStringFunc(js, func(s string) string {
+		sfx := setWhenEquals(s[len(s)-1], ',')
+		uri := `http://purl.org/ASN/scheme/ASNAuthorityStatus/Original`
+		suffix := fSf(`"asn_authorityStatus": { "uri": "%s" }%s`, uri, sfx)
+		if sfx == "" {
+			return s + "," + suffix
 		}
-		return fSf(`"text": "%s"%s%s`, fetchValue(s), suffix1, suffix0)
+		return s + suffix
+	})
+	// asn_indexingStatus
+	js = rNewId.ReplaceAllStringFunc(js, func(s string) string {
+		sfx := setWhenEquals(s[len(s)-1], ',')
+		uri := `http://purl.org/ASN/scheme/ASNIndexingStatus/No`
+		suffix := fSf(`"asn_indexingStatus": { "uri": "%s" }%s`, uri, sfx)
+		if sfx == "" {
+			return s + "," + suffix
+		}
+		return s + suffix
+	})
+	// dcterms_rights
+	js = rNewId.ReplaceAllStringFunc(js, func(s string) string {
+		sfx := setWhenEquals(s[len(s)-1], ',')
+		rights := `©Copyright Australian Curriculum, Assessment and Reporting Authority`
+		suffix := fSf(`"dcterms_rights": { "language": "%s", "literal": "%s" }%s`, "en-au", rights, sfx)
+		if sfx == "" {
+			return s + "," + suffix
+		}
+		return s + suffix
+	})
+	// dcterms_rightsHolder
+	js = rNewId.ReplaceAllStringFunc(js, func(s string) string {
+		sfx := setWhenEquals(s[len(s)-1], ',')
+		rh := `Australian Curriculum, Assessment and Reporting Authority`
+		suffix := fSf(`"dcterms_rightsHolder": { "language": "%s", "literal": "%s" }%s`, "en-au", rh, sfx)
+		if sfx == "" {
+			return s + "," + suffix
+		}
+		return s + suffix
 	})
 
 	////////////////////////////////////////////////
@@ -245,7 +309,7 @@ func treeProc(data []byte, outdir, outname, uri4id, la, sofiaTreeFile, pref4chil
 	if !strings.HasSuffix(outname, ".json") {
 		outname += ".json"
 	}
-	os.WriteFile(fmt.Sprintf("./%s/%s", outdir, outname), []byte(js), os.ModePerm)
+	os.WriteFile(fSf("./%s/%s", outdir, outname), []byte(js), os.ModePerm)
 }
 
 func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string) {
@@ -268,20 +332,13 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 	tool.ScanNode(data, func(i int, id, block string) bool {
 
 		code := gjson.Get(block, "code").String()
+		// fmt.Println(i, id, code)
 
 		laTitle := tool.GetAncestorTitle(mCodeParent, code, "")
 		if laTitle == "" {
 			// fmt.Println("Learning area missing:", code)
 		}
 		subUri, okSubUri := mLaUri[laTitle]
-
-		var years []string
-		if tn := gjson.Get(block, "doc.typeName").String(); tn == "Level" {
-			yrTitle := gjson.Get(block, "title").String()
-			years = yearsSplit(yrTitle)
-		}
-
-		// fmt.Println(i, id, code)
 
 		nodeType := tool.GetCodeAncestor(mCodeParent, code, 0)
 
@@ -295,7 +352,6 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 		}
 
 		rstChildren := gjson.Get(block, "children")
-		rstTags := gjson.Get(block, "tags")
 
 		////////////////////////////////////////////////////////
 
@@ -305,8 +361,11 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 		aj.Id = gjson.Get(block, "id").String()
 		aj.Dcterms_modified.Literal = gjson.Get(block, "created_at").String()
 		aj.Dcterms_title.Literal = gjson.Get(block, "title").String()
+		aj.Dcterms_title.Language = "en-au"
 		aj.Asn_statementLabel.Literal = gjson.Get(block, "doc.typeName").String()
+		aj.Asn_statementLabel.Language = "en-au"
 		aj.Asn_statementNotation.Literal = gjson.Get(block, "code").String()
+		aj.Asn_statementNotation.Language = "en-au"
 		aj.Text = gjson.Get(block, "text").String()
 		for _, c := range rstChildren.Array() {
 			aj.Children = append(aj.Children, pref4children+c.String())
@@ -317,32 +376,32 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 			aj.Dcterms_subject.Uri = subUri
 			aj.Dcterms_subject.PrefLabel = laTitle
 		}
-		for _, y := range years {
-			aj.Dcterms_educationLevel = append(aj.Dcterms_educationLevel, struct {
-				Uri       string "json:\"uri\""
-				PrefLabel string "json:\"prefLabel\""
-			}{
-				Uri:       mYrlvlUri[y],
-				PrefLabel: y,
-			})
+		if tn := gjson.Get(block, "doc.typeName").String(); tn == "Level" {
+			yrTitle := gjson.Get(block, "title").String()
+			for _, y := range yearsSplit(yrTitle) {
+				aj.Dcterms_educationLevel = append(aj.Dcterms_educationLevel, struct {
+					Uri       string "json:\"uri\""
+					PrefLabel string "json:\"prefLabel\""
+				}{
+					Uri:       mYrlvlUri[y],
+					PrefLabel: y,
+				})
+			}
 		}
 
 		// Boilerplate
-		aj.Dcterms_title.Language = "en-au"
-		aj.Asn_statementLabel.Language = "en-au"
-		aj.Asn_statementNotation.Language = "en-au"
-		aj.Dcterms_rights.Language = "en-au"
-		aj.Dcterms_rightsHolder.Language = "en-au"
 		aj.Asn_authorityStatus.Uri = `http://purl.org/ASN/scheme/ASNAuthorityStatus/Original`
 		aj.Asn_indexingStatus.Uri = `http://purl.org/ASN/scheme/ASNIndexingStatus/No`
+		aj.Dcterms_rights.Language = "en-au"
 		aj.Dcterms_rights.Literal = `©Copyright Australian Curriculum, Assessment and Reporting Authority`
+		aj.Dcterms_rightsHolder.Language = "en-au"
 		aj.Dcterms_rightsHolder.Literal = `Australian Curriculum, Assessment and Reporting Authority`
 		if rstChildren.IsArray() {
 			aj.Cls = "folder"
 		} else {
 			aj.Leaf = "true"
 		}
-		if rstTags.IsObject() {
+		if gjson.Get(block, "tags").IsObject() {
 			aj.Asn_conceptTerm = "SCIENCE_TEACHER_BACKGROUND_INFORMATION"
 		}
 
@@ -463,7 +522,7 @@ func childrenRepl(inpath string, mIdBlock map[string]string) string {
 		log.Fatalln(err)
 	}
 
-	rChildren := regexp.MustCompile(`"children":(\s)+\[(\n\s+"http[^"]+",?)+\n\s+\]`)
+	rChildren := regexp.MustCompile(`"children":\s*\[([\n\s]*"http[^"]+",?)+[\n\s]*\]`)
 	js := string(data)
 	repl := false
 
