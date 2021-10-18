@@ -13,38 +13,6 @@ import (
 	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 	"github.com/tidwall/gjson"
-	"github.com/tidwall/sjson"
-)
-
-var (
-	mLaUri = map[string]string{
-		"English":                        `http://vocabulary.curriculum.edu.au/framework/E`,
-		"The Arts":                       `http://vocabulary.curriculum.edu.au/framework/A`,
-		"Health and Physical Education":  `http://vocabulary.curriculum.edu.au/framework/P`,
-		"Humanities and Social Sciences": `http://vocabulary.curriculum.edu.au/framework/U`,
-		"Languages":                      `http://vocabulary.curriculum.edu.au/framework/L`,
-		"Mathematics":                    `http://vocabulary.curriculum.edu.au/framework/M`,
-		"Science":                        `http://vocabulary.curriculum.edu.au/framework/S`,
-		"Technologies":                   `http://vocabulary.curriculum.edu.au/framework/T`,
-		"Work Studies":                   `http://vocabulary.curriculum.edu.au/framework/W`,
-	}
-
-	mYrlvlUri = map[string]string{
-		"Early years":     `http://vocabulary.curriculum.edu.au/schoolLevel/-`,
-		"Foundation Year": `http://vocabulary.curriculum.edu.au/schoolLevel/0`,
-		"Year 1":          `http://vocabulary.curriculum.edu.au/schoolLevel/1`,
-		"Year 2":          `http://vocabulary.curriculum.edu.au/schoolLevel/2`,
-		"Year 3":          `http://vocabulary.curriculum.edu.au/schoolLevel/3`,
-		"Year 4":          `http://vocabulary.curriculum.edu.au/schoolLevel/4`,
-		"Year 5":          `http://vocabulary.curriculum.edu.au/schoolLevel/5`,
-		"Year 6":          `http://vocabulary.curriculum.edu.au/schoolLevel/6`,
-		"Year 7":          `http://vocabulary.curriculum.edu.au/schoolLevel/7`,
-		"Year 8":          `http://vocabulary.curriculum.edu.au/schoolLevel/8`,
-		"Year 9":          `http://vocabulary.curriculum.edu.au/schoolLevel/9`,
-		"Year 10":         `http://vocabulary.curriculum.edu.au/schoolLevel/10`,
-		"Year 11":         `http://vocabulary.curriculum.edu.au/schoolLevel/11`,
-		"Year 12":         `http://vocabulary.curriculum.edu.au/schoolLevel/12`,
-	}
 )
 
 type asnjson struct {
@@ -158,158 +126,15 @@ func yearsSplit(yearstr string) (ret []string) {
 	return
 }
 
-func scanIdTitle(data []byte) map[string]string {
+func scanNodeIdTitle(data []byte) map[string]string {
 	m := make(map[string]string)
 	tool.ScanNode(data, func(i int, id, block string) bool {
-		e := bytes.LastIndexAny(data, "}")
-		data = data[:e+1]
 		uid := gjson.Get(block, "id").String()
 		title := gjson.Get(block, "title").String()
 		m[uid] = title
 		return true
 	})
 	return m
-}
-
-func treeProc(data []byte, outdir, outname, uri4id, la, sofiaTreeFile, pref4children string) {
-
-	fSf := fmt.Sprintf
-
-	js := string(data)
-	uri4id = strings.TrimSuffix(uri4id, "/")
-
-	fetchValue := func(kvstr string) string {
-		r := regexp.MustCompile(`:\s*"`)
-		loc := r.FindAllStringIndex(kvstr, 1)[0]
-		start := loc[1]
-		end := strings.LastIndex(kvstr, `"`)
-		return kvstr[start:end]
-	}
-
-	setWhenEquals := func(c0, c1 byte) string {
-		if c0 == c1 {
-			return string(c0)
-		}
-		return ""
-	}
-
-	//////
-	// Id
-	rId := regexp.MustCompile(`"uuid":\s*"[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}"`)
-	js = rId.ReplaceAllStringFunc(js, func(s string) string {
-		return fSf(`"Id": "%s/%s"`, uri4id, fetchValue(s))
-	})
-
-	// created_at
-	rCreated := regexp.MustCompile(`"created_at":\s*"[^"]+"`)
-	js = rCreated.ReplaceAllStringFunc(js, func(s string) string {
-		return fSf(`"dcterms_modified": { "literal": "%s" }`, fetchValue(s))
-	})
-
-	// title
-	rTitle := regexp.MustCompile(`"title":\s*".+",?\n`)
-	js = rTitle.ReplaceAllStringFunc(js, func(s string) string {
-		sfx0, sfx1 := setWhenEquals(s[len(s)-1], '\n'), setWhenEquals(s[len(s)-2], ',')
-		return fSf(`"dcterms_title": { "language": "%s", "literal": "%s" }%s%s`, "en-au", fetchValue(s), sfx1, sfx0)
-	})
-
-	// doc.typeName
-	rDocType := regexp.MustCompile(`"doc":\s*{[\n\s]*"typeName":\s*"[^"]+"[\n\s]*},?\n`)
-	js = rDocType.ReplaceAllStringFunc(js, func(s string) string {
-		sfx0, sfx1 := setWhenEquals(s[len(s)-1], '\n'), setWhenEquals(s[len(s)-2], ',')
-		return fSf(`"asn_statementLabel": { "language": "%s", "literal": "%s" }%s%s`, "en-au", fetchValue(s), sfx1, sfx0)
-	})
-
-	// code
-	rCode := regexp.MustCompile(`"code":\s*"[^"]+"`)
-	js = rCode.ReplaceAllStringFunc(js, func(s string) string {
-		return fSf(`"asn_statementNotation": { "language": "%s", "literal": "%s" }`, "en-au", fetchValue(s))
-	})
-
-	// text
-	rText := regexp.MustCompile(`"text":\s*".+",?\n`)
-	js = rText.ReplaceAllStringFunc(js, func(s string) string {
-		sfx0, sfx1 := setWhenEquals(s[len(s)-1], '\n'), setWhenEquals(s[len(s)-2], ',')
-		return fSf(`"text": "%s"%s%s`, fetchValue(s), sfx1, sfx0)
-	})
-
-	//////
-	// dcterms_subject
-	if subUri, okSubUri := mLaUri[la]; okSubUri {
-		rId4uri := regexp.MustCompile(`"Id":\s*"http[^"]+",?\n`)
-		js = rId4uri.ReplaceAllStringFunc(js, func(s string) string {
-			sfx0, sfx1 := setWhenEquals(s[len(s)-1], '\n'), setWhenEquals(s[len(s)-2], ',')
-			suffix := fSf(`"dcterms_subject": { "prefLabel": "%s", "uri": "%s" }%s%s`, la, subUri, sfx1, sfx0)
-			return s + suffix
-		})
-	}
-
-	// [ dcterms_title, asn_statementLabel ] => dcterms_educationLevel
-	mLvlSiblings, _ := jt.FamilyTree(js)
-	mFieldSibling := jt.GetSiblingPath(js, "dcterms_title", "asn_statementLabel", mLvlSiblings)
-	for fp, sp := range mFieldSibling {
-		if gjson.Get(js, sp+".literal").String() == "Level" {
-			for _, y := range yearsSplit(gjson.Get(js, fp+".literal").String()) {
-				fmt.Println(y)
-				js, _ = sjson.Set(js, jt.NewSibling(fp, "dcterms_educationLevel.uri"), mYrlvlUri[y])
-				js, _ = sjson.Set(js, jt.NewSibling(fp, "dcterms_educationLevel.prefLabel"), y)
-			}
-		}
-	}
-
-	// "children" => add "cls": "folder"; else add "leaf": "true"
-	cpaths := jt.GetFieldPaths(js, "children", mLvlSiblings)
-	
-
-	// append some after "Id"
-	rNewId := regexp.MustCompile(`"Id":\s*"http[^"]+",?`)
-	// asn_authorityStatus
-	js = rNewId.ReplaceAllStringFunc(js, func(s string) string {
-		sfx := setWhenEquals(s[len(s)-1], ',')
-		uri := `http://purl.org/ASN/scheme/ASNAuthorityStatus/Original`
-		suffix := fSf(`"asn_authorityStatus": { "uri": "%s" }%s`, uri, sfx)
-		if sfx == "" {
-			return s + "," + suffix
-		}
-		return s + suffix
-	})
-	// asn_indexingStatus
-	js = rNewId.ReplaceAllStringFunc(js, func(s string) string {
-		sfx := setWhenEquals(s[len(s)-1], ',')
-		uri := `http://purl.org/ASN/scheme/ASNIndexingStatus/No`
-		suffix := fSf(`"asn_indexingStatus": { "uri": "%s" }%s`, uri, sfx)
-		if sfx == "" {
-			return s + "," + suffix
-		}
-		return s + suffix
-	})
-	// dcterms_rights
-	js = rNewId.ReplaceAllStringFunc(js, func(s string) string {
-		sfx := setWhenEquals(s[len(s)-1], ',')
-		rights := `©Copyright Australian Curriculum, Assessment and Reporting Authority`
-		suffix := fSf(`"dcterms_rights": { "language": "%s", "literal": "%s" }%s`, "en-au", rights, sfx)
-		if sfx == "" {
-			return s + "," + suffix
-		}
-		return s + suffix
-	})
-	// dcterms_rightsHolder
-	js = rNewId.ReplaceAllStringFunc(js, func(s string) string {
-		sfx := setWhenEquals(s[len(s)-1], ',')
-		rh := `Australian Curriculum, Assessment and Reporting Authority`
-		suffix := fSf(`"dcterms_rightsHolder": { "language": "%s", "literal": "%s" }%s`, "en-au", rh, sfx)
-		if sfx == "" {
-			return s + "," + suffix
-		}
-		return s + suffix
-	})
-
-	////////////////////////////////////////////////
-
-	if !strings.HasSuffix(outname, ".json") {
-		outname += ".json"
-	}
-	os.WriteFile(fSf("./%s/%s", outdir, outname), []byte(js), os.ModePerm)
 }
 
 func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string) {
@@ -327,35 +152,18 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 	}
 	mCodeParent := tool.GetCodeParentMap(dataTree)
 
-	mUidTitle := scanIdTitle(data)
+	mUidTitle := scanNodeIdTitle(data)
 
 	tool.ScanNode(data, func(i int, id, block string) bool {
 
 		code := gjson.Get(block, "code").String()
 		// fmt.Println(i, id, code)
 
-		laTitle := tool.GetAncestorTitle(mCodeParent, code, "")
-		if laTitle == "" {
-			// fmt.Println("Learning area missing:", code)
-		}
-		subUri, okSubUri := mLaUri[laTitle]
-
-		nodeType := tool.GetCodeAncestor(mCodeParent, code, 0)
-
-		mConnUri := make(map[string]string)
-		result := gjson.Get(block, "connections.*")
-		if result.IsArray() {
-			for _, rUri := range result.Array() {
-				uri := rUri.String()
-				mConnUri[uri] = mUidTitle[uri]
-			}
-		}
-
-		rstChildren := gjson.Get(block, "children")
-
 		////////////////////////////////////////////////////////
 
 		aj := asnjson{}
+
+		rstChildren := gjson.Get(block, "children")
 
 		// Direct
 		aj.Id = gjson.Get(block, "id").String()
@@ -372,6 +180,11 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 		}
 
 		// Derived
+		laTitle := tool.GetAncestorTitle(mCodeParent, code, "")
+		if laTitle == "" {
+			// fmt.Println("Learning area missing:", code)
+		}
+		subUri, okSubUri := mLaUri[laTitle]
 		if okSubUri {
 			aj.Dcterms_subject.Uri = subUri
 			aj.Dcterms_subject.PrefLabel = laTitle
@@ -406,6 +219,16 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 		}
 
 		// Predicate
+		mConnUri := make(map[string]string)
+		result := gjson.Get(block, "connections.*")
+		if result.IsArray() {
+			for _, rUri := range result.Array() {
+				uri := rUri.String()
+				mConnUri[uri] = mUidTitle[uri]
+			}
+		}
+
+		nodeType := tool.GetCodeAncestor(mCodeParent, code, 0)
 		switch nodeType {
 		case "GC":
 			for uri, title := range mConnUri {

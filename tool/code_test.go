@@ -21,7 +21,7 @@ func TestGetAllCode(t *testing.T) {
 	ancestors = GetCodeAncestors(mCodeParent, code)
 	fmt.Println(ancestors)
 
-	code = "PSCSEMC0_1"
+	code = "AC9AMAFS01" // "PSCSEMC0_1"
 	ancestors = GetCodeAncestors(mCodeParent, code)
 	fmt.Println(ancestors)
 

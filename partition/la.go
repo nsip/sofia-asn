@@ -93,9 +93,9 @@ func la(js, outdir string) {
 					mASfield["children"] = mAS
 				case "Learning Areas":
 					mLAfield["code"] = gjson.Get(block1, "code").String()
-					mLAfield["uuid"] = gjson.Get(block1, "type").String()
+					mLAfield["uuid"] = gjson.Get(block1, "uuid").String()
 					mLAfield["type"] = gjson.Get(block1, "type").String()
-					mLAfield["created_at"] = gjson.Get(block1, "create_at").String()
+					mLAfield["created_at"] = gjson.Get(block1, "created_at").String()
 					mLAfield["title"] = gjson.Get(block1, "title").String()
 					mLAfield["children"] = mLA
 				}

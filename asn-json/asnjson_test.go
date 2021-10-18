@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"os"
 	"testing"
 )
 
@@ -40,12 +38,4 @@ func TestMapSet(t *testing.T) {
 	mm["c"] = "C"
 	fmt.Println("m:", m)
 	fmt.Println("mm:", mm)
-}
-
-func TestTreeProc(t *testing.T) {
-	data, err := os.ReadFile(`../partition/out/la-English.json`)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	treeProc(data, "./out", "test", "http://rdf.curriculum.edu.au/202110", "English", "", "")
 }
