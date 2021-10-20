@@ -2,16 +2,12 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"strings"
 
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
 
-func ccp(js, outdir string) {
-
-	outdir = strings.Trim(outdir, `./\`)
+func ccp(js, outdir string) string {
 
 	mRoot := map[string]interface{}{
 		"code":       gjson.Get(js, "code").String(),
@@ -46,8 +42,5 @@ func ccp(js, outdir string) {
 	out, _ = sjson.SetRaw(out, fmt.Sprintf("children.%d", 0), mRoot["children"].(string))
 
 	// out = jt.FmtStr(out, "  ")
-	err := os.WriteFile(fmt.Sprintf("./%s/ccp-%s.json", outdir, "Cross-curriculum Priorities"), []byte(out), os.ModePerm)
-	if err != nil {
-		fmt.Println(err)
-	}
+	return out
 }

@@ -42,6 +42,12 @@ func treeProc(data []byte, uri4id, la string, mCodeParent, mUidTitle map[string]
 		return fSf(`"Id": "%s/%s"`, uri4id, fetchValue(s))
 	})
 
+	// type => removed
+	rType := regexp.MustCompile(`"type":\s*"\w+",?\n?`)
+	js = rType.ReplaceAllStringFunc(js, func(s string) string {
+		return ""
+	})
+
 	// created_at
 	rCreated := regexp.MustCompile(`"created_at":\s*"[^"]+"`)
 	js = rCreated.ReplaceAllStringFunc(js, func(s string) string {

@@ -3,16 +3,14 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-	"strings"
 
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
 
-func la(js, outdir string) {
+func la(js string) (mOut map[string]string) {
 
-	outdir = strings.Trim(outdir, `./\`)
+	mOut = make(map[string]string)
 
 	mNameLaAs := map[string]string{
 		"English":      "English",
@@ -143,13 +141,53 @@ NEXTLA:
 				}
 
 				// out = jt.FmtStr(out, "  ")
-				err := os.WriteFile(fmt.Sprintf("./%s/la-%s.json", outdir, la), []byte(out), os.ModePerm)
-				if err != nil {
-					fmt.Println(err)
-				}
-
+				mOut[la] = out
 				continue NEXTLA
 			}
 		}
 	}
+
+	return
+}
+
+func laRestructure(js string, I int) string {
+
+	for i := 0; i < 100; i++ {
+
+		path := fmt.Sprintf("children.%d.children.%d.code", I, i)
+		testcode := gjson.Get(js, path).String()
+		if testcode == "" {
+			break
+		}
+		fmt.Println(testcode)
+
+		for j := 0; j < 100; j++ {
+			path := fmt.Sprintf("children.%d.children.%d.children.%d.code", I, i, j)
+			testcode := gjson.Get(js, path).String()
+			if testcode == "" {
+				break
+			}
+			fmt.Printf("\t%s\n", testcode)
+
+			for k := 0; k < 100; k++ {
+				path := fmt.Sprintf("children.%d.children.%d.children.%d.children.%d.code", I, i, j, k)
+				testcode := gjson.Get(js, path).String()
+				if testcode == "" {
+					break
+				}
+				fmt.Printf("\t\t%s\n", testcode)
+
+				for l := 0; l < 100; l++ {
+					path := fmt.Sprintf("children.%d.children.%d.children.%d.children.%d.children.%d.code", I, i, j, k, l)
+					testcode := gjson.Get(js, path).String()
+					if testcode == "" {
+						break
+					}
+					fmt.Printf("\t\t\t%s\n", testcode)
+				}
+			}
+		}
+	}
+
+	return ""
 }

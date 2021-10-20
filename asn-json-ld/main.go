@@ -3,52 +3,40 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
+	"strings"
+
+	jsontool "github.com/digisan/json-tool"
 )
 
 type AsnJsonLd struct {
 }
 
-var (
-	jsonldctx = `{
-		"@context": {
-		  "asn": "http://purl.org/ASN/schema/core/",
-		  "dc": "http://purl.org/dc/terms/",
-		  "gem": "http://purl.org/gem/qualifiers/",
-		  "skos": "http://www.w3.org/2004/02/skos/core#",
-		  "xsd": "http://www.w3.org/2001/XMLSchema#",
-		  @language: "en-au"
-		}
-	  }`
+func addContext(js, ctx string) string {
+	s, e := strings.Index(ctx, "{"), strings.LastIndex(ctx, "}")
+	ctx = ctx[s+1 : e]
+	s = strings.Index(js, "{")
+	js = js[s+1:]
+	return jsontool.FmtStr("{"+ctx+","+js, "  ")
+}
 
-	ns = map[string]string{
-		"asn": "http://purl.org/ASN/schema/core/",
-		"deo": "http://purl.org/spar/deo",
-		"esa": "http://vocabulary.curriculum.edu.au/",
-		"dc":  "http://purl.org/dc/terms/",
-		"gem": "http://purl.org/gem/qualifiers/",
-	}
+func replace(js string) string {
+	r := regexp.MustCompile(`"(dc_|dcterms_|asn_)[^"]+"`)
+	js = r.ReplaceAllStringFunc(js, func(s string) string {
+		s = strings.Trim(s, "\"")
+		ss := strings.Split(s, "_")
+		p1 := mPrefRepl[ss[0]+"_"]
+		return "\"" + p1 + ss[1] + "\""
+	})
 
-	prefrepl = map[string]string{
-		"dc_":      "dc",
-		"dcterms_": "dc",
-		"asn_":     "asn",
-	}
+	
 
-	repl = map[string]string{
-		"text":     "dc:description",
-		"children": "gem:hasChild",
-		"id":       "@id",
-	}
-
-	ignr = []string{
-		"cls",
-		"leaf",
-	}
-)
+	return js
+}
 
 func main() {
 
-	data, err := os.ReadFile("../asn-json/out/asnroot.json")
+	data, err := os.ReadFile("../asn-json/out/la-English.json")
 	if err != nil {
 		panic(err)
 	}

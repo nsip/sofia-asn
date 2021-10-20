@@ -15,9 +15,25 @@ func main() {
 	}
 	js := string(data)
 
-	la(js, outdir)
-	ccp(js, outdir)
-	gc(js, outdir)
+	fileContent := ccp(js, outdir)
+	err = os.WriteFile(fmt.Sprintf("./%s/ccp-%s.json", outdir, "Cross-curriculum Priorities"), []byte(fileContent), os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	for gc, fileContent := range gc(js) {
+		err = os.WriteFile(fmt.Sprintf("./%s/gc-%s.json", outdir, gc), []byte(fileContent), os.ModePerm)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	for la, fileContent := range la(js) {
+		err := os.WriteFile(fmt.Sprintf("./%s/la-%s.json", outdir, la), []byte(fileContent), os.ModePerm)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 
 	//////////////////////////////////////////////////////////////
 

@@ -2,17 +2,15 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"strings"
 
 	"github.com/digisan/gotk/slice/ts"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
 
-func gc(js, outdir string) {
+func gc(js string) map[string]string {
 
-	outdir = strings.Trim(outdir, `./\`)
+	mOut := make(map[string]string)
 
 	var (
 		gcTitles = []string{
@@ -207,9 +205,8 @@ func gc(js, outdir string) {
 		out, _ = sjson.SetRaw(out, "children.0.children.0.children", L2["children"].(string))
 
 		// out = jt.FmtStr(out, "  ")
-		err := os.WriteFile(fmt.Sprintf("./%s/gc-%s.json", outdir, L2["title"]), []byte(out), os.ModePerm)
-		if err != nil {
-			fmt.Println(err)
-		}
+		mOut[fmt.Sprint(L2["title"])] = out
 	}
+
+	return mOut
 }
