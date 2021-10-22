@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -34,6 +35,88 @@ func main() {
 			fmt.Println(err)
 		}
 	}
+
+	//////////////////////////////////////////////////////////////
+
+	func() {
+		file := "./out/la-English.json"
+		data, err := os.ReadFile(file)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		js := reStructEng(string(data))
+		os.WriteFile(file, []byte(js), os.ModePerm)
+	}()
+
+	func() {
+		file := "./out/la-HASS.json"
+		data, err := os.ReadFile(file)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		js := reStructHASS(string(data))
+		os.WriteFile(file, []byte(js), os.ModePerm)
+	}()
+
+	func() {
+		file := "./out/la-HPE.json"
+		data, err := os.ReadFile(file)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		js := reStructHPE(string(data))
+		os.WriteFile(file, []byte(js), os.ModePerm)
+	}()
+
+	func() {
+		file := "./out/la-Languages.json"
+		data, err := os.ReadFile(file)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		js := reStructLang(string(data))
+		os.WriteFile(file, []byte(js), os.ModePerm)
+	}()
+
+	func() {
+		file := "./out/la-Mathematics.json"
+		data, err := os.ReadFile(file)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		js := reStructMath(string(data))
+		os.WriteFile(file, []byte(js), os.ModePerm)
+	}()
+
+	func() {
+		file := "./out/la-Science.json"
+		data, err := os.ReadFile(file)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		js := reStructSci(string(data))
+		os.WriteFile(file, []byte(js), os.ModePerm)
+	}()
+
+	func() {
+		file := "./out/la-Technologies.json"
+		data, err := os.ReadFile(file)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		js := reStructTech(string(data))
+		os.WriteFile(file, []byte(js), os.ModePerm)
+	}()
+
+	func() {
+		file := "./out/la-The Arts.json"
+		data, err := os.ReadFile(file)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		js := reStructArt(string(data))
+		os.WriteFile(file, []byte(js), os.ModePerm)
+	}()
 
 	//////////////////////////////////////////////////////////////
 

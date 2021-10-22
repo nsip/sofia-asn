@@ -1,5 +1,150 @@
 package main
 
+import (
+	"fmt"
+
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
+)
+
+// js must be The Arts Learning Area - Achievement Standard json
+func reStructArt(js string) string {
+
+	var (
+		mLACode2ASCode = map[string]string{
+			"ARTDANFY":   "",
+			"ARTDANY12":  "ASARTDANY12",
+			"ARTDANY34":  "ASARTDANY34",
+			"ARTDANY56":  "ASARTDANY56",
+			"ARTDANY78":  "ASARTDANY78",
+			"ARTDANY910": "ASARTDANY910",
+			"ARTDRAFY":   "",
+			"ARTDRAY12":  "ASARTDRAY12",
+			"ARTDRAY34":  "ASARTDRAY34",
+			"ARTDRAY56":  "ASARTDRAY56",
+			"ARTDRAY78":  "ASARTDRAY78",
+			"ARTDRAY910": "ASARTDRAY910",
+			"ARTMEDFY":   "",
+			"ARTMEDY12":  "ASARTMEDY12",
+			"ARTMEDY34":  "ASARTMEDY34",
+			"ARTMEDY56":  "ASARTMEDY56",
+			"ARTMEDY78":  "ASARTMEDY78",
+			"ARTMEDY910": "ASARTMEDY910",
+			"ARTMUSFY":   "",
+			"ARTMUSY12":  "ASARTMUSY12",
+			"ARTMUSY34":  "ASARTMUSY34",
+			"ARTMUSY56":  "ASARTMUSY56",
+			"ARTMUSY78":  "ASARTMUSY78",
+			"ARTMUSY910": "ASARTMUSY910",
+		}
+
+		mLA2Path = map[string]string{
+			"ARTDANFY":   "",
+			"ARTDANY12":  "",
+			"ARTDANY34":  "",
+			"ARTDANY56":  "",
+			"ARTDANY78":  "",
+			"ARTDANY910": "",
+			"ARTDRAFY":   "",
+			"ARTDRAY12":  "",
+			"ARTDRAY34":  "",
+			"ARTDRAY56":  "",
+			"ARTDRAY78":  "",
+			"ARTDRAY910": "",
+			"ARTMEDFY":   "",
+			"ARTMEDY12":  "",
+			"ARTMEDY34":  "",
+			"ARTMEDY56":  "",
+			"ARTMEDY78":  "",
+			"ARTMEDY910": "",
+			"ARTMUSFY":   "",
+			"ARTMUSY12":  "",
+			"ARTMUSY34":  "",
+			"ARTMUSY56":  "",
+			"ARTMUSY78":  "",
+			"ARTMUSY910": "",
+		}
+
+		mAS = make(map[string]string)
+	)
+
+	fSf := fmt.Sprintf
+
+	for I := 0; I < 2; I++ {
+
+		path := fSf("children.%d.code", I)
+		code := gjson.Get(js, path).String()
+		if code == "" {
+			break
+		}
+		// fmt.Println(code)
+
+		for i := 0; i < 100; i++ {
+
+			path := fSf("children.%d.children.%d.code", I, i)
+			code := gjson.Get(js, path).String()
+			if code == "" {
+				break
+			}
+			// fmt.Printf("\t%s\n", code)
+
+			// only deal with The Arts ******************************************
+			if code != "ART" && code != "ASART" {
+				continue
+			}
+
+			for j := 0; j < 100; j++ {
+				path := fSf("children.%d.children.%d.children.%d.code", I, i, j)
+				code := gjson.Get(js, path).String()
+				if code == "" {
+					break
+				}
+				// fmt.Printf("\t\t%s\n", code)
+
+				for k := 0; k < 100; k++ {
+					path := fSf("children.%d.children.%d.children.%d.children.%d.code", I, i, j, k)
+					code := gjson.Get(js, path).String()
+					if code == "" {
+						break
+					}
+					// fmt.Printf("\t\t\t%s\n", code)
+
+					for l := 0; l < 100; l++ {
+						path := fSf("children.%d.children.%d.children.%d.children.%d.children.%d.code", I, i, j, k, l)
+						code := gjson.Get(js, path).String()
+						if code == "" {
+							break
+						}
+						// fmt.Printf("\t\t\t\t%s\n", code)
+
+						// fetch content from AS
+						if I == 0 {
+							mAS[code] = gjson.Get(js, fSf("children.%d.children.%d.children.%d.children.%d.children.%d", I, i, j, k, l)).String()
+						}
+					}
+
+					// fetch LA dest path
+					if I == 1 {
+						mLA2Path[code] = fSf("children.%d.children.%d.children.%d.children.%d.children", I, i, j, k)
+					}
+				}
+			}
+		}
+	}
+
+	for laCode, path := range mLA2Path {
+		path += fmt.Sprintf(".%d", len(gjson.Get(js, path).Array())) // modify path, append to the last child
+		content := mAS[mLACode2ASCode[laCode]]
+		if content != "" {
+			js, _ = sjson.SetRaw(js, path, content)
+		}
+	}
+
+	// remove AS part
+	js, _ = sjson.Delete(js, "children.0")
+	return js
+}
+
 // ASART
 // 	ASARTDAN
 // 		ASARTDANY12L

@@ -1,5 +1,122 @@
 package main
 
+import (
+	"fmt"
+
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
+)
+
+// js must be Mathematics Learning Area - Achievement Standard json
+func reStructMath(js string) string {
+
+	var (
+		mLACode2ASCode = map[string]string{
+			"MATMATFY":  "ASMATFY",
+			"MATMATY1":  "ASMATY1",
+			"MATMATY2":  "ASMATY2",
+			"MATMATY3":  "ASMATY3",
+			"MATMATY4":  "ASMATY4",
+			"MATMATY5":  "ASMATY5",
+			"MATMATY6":  "ASMATY6",
+			"MATMATY7":  "ASMATY7",
+			"MATMATY8":  "ASMATY8",
+			"MATMATY9":  "ASMATY9",
+			"MATMATY10": "ASMATY10",
+		}
+
+		mLA2Path = map[string]string{
+			"MATMATFY":  "",
+			"MATMATY1":  "",
+			"MATMATY2":  "",
+			"MATMATY3":  "",
+			"MATMATY4":  "",
+			"MATMATY5":  "",
+			"MATMATY6":  "",
+			"MATMATY7":  "",
+			"MATMATY8":  "",
+			"MATMATY9":  "",
+			"MATMATY10": "",
+		}
+
+		mAS = make(map[string]string)
+	)
+
+	fSf := fmt.Sprintf
+
+	for I := 0; I < 2; I++ {
+
+		path := fSf("children.%d.code", I)
+		code := gjson.Get(js, path).String()
+		if code == "" {
+			break
+		}
+		// fmt.Println(code)
+
+		for i := 0; i < 100; i++ {
+
+			path := fSf("children.%d.children.%d.code", I, i)
+			code := gjson.Get(js, path).String()
+			if code == "" {
+				break
+			}
+			// fmt.Printf("\t%s\n", code)
+
+			// only deal with English ******************************************
+			if code != "MAT" && code != "ASMAT" {
+				continue
+			}
+
+			for j := 0; j < 100; j++ {
+				path := fSf("children.%d.children.%d.children.%d.code", I, i, j)
+				code := gjson.Get(js, path).String()
+				if code == "" {
+					break
+				}
+				// fmt.Printf("\t\t%s\n", code)
+
+				for k := 0; k < 100; k++ {
+					path := fSf("children.%d.children.%d.children.%d.children.%d.code", I, i, j, k)
+					code := gjson.Get(js, path).String()
+					if code == "" {
+						break
+					}
+					// fmt.Printf("\t\t\t%s\n", code)
+
+					for l := 0; l < 100; l++ {
+						path := fSf("children.%d.children.%d.children.%d.children.%d.children.%d.code", I, i, j, k, l)
+						code := gjson.Get(js, path).String()
+						if code == "" {
+							break
+						}
+						// fmt.Printf("\t\t\t\t%s\n", code)
+
+						// fetch content from AS
+						if I == 0 {
+							mAS[code] = gjson.Get(js, fSf("children.%d.children.%d.children.%d.children.%d.children.%d", I, i, j, k, l)).String()
+						}
+					}
+
+					// fetch LA dest path
+					if I == 1 {
+						mLA2Path[code] = fSf("children.%d.children.%d.children.%d.children.%d.children", I, i, j, k)
+					}
+				}
+			}
+		}
+	}
+
+	for laCode, path := range mLA2Path {
+		path += fmt.Sprintf(".%d", len(gjson.Get(js, path).Array())) // modify path, append to the last child
+		content := mAS[mLACode2ASCode[laCode]]
+		js, _ = sjson.SetRaw(js, path, content)
+	}
+
+	// remove AS part
+	js, _ = sjson.Delete(js, "children.0")
+	return js
+}
+
 // ASMAT
 // 	ASMATMAT
 // 		ASMATFYL
