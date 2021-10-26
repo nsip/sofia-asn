@@ -13,6 +13,203 @@ import (
 	"github.com/tidwall/sjson"
 )
 
+func getYears(mData map[string]interface{}, path string) []string {
+AGAIN:
+	sp := jt.NewSibling(path, "doc.typeName")
+	if mData[sp] == "Level" {
+		return yearsSplit(mData[jt.NewSibling(path, "title")].(string))
+	} else {
+		path = jt.ParentPath(path)
+		goto AGAIN
+	}
+}
+
+func treeProc2(data []byte, uri4id, la string) string {
+
+	var (
+		fSf     = fmt.Sprintf
+		sibling = jt.NewSibling
+		uncle   = jt.NewUncle
+	)
+
+	js := string(data)
+	mLvlSiblings, _ := jt.FamilyTree(js)
+
+	mData, err := jt.Flatten(data)
+	if err != nil {
+		panic(err)
+	}
+
+	jt.RegisterRule(`\.?uuid$`, func(path string, value interface{}) (ok bool, ps []string, vs []interface{}) {
+		return true, []string{sibling(path, "Id")}, []interface{}{fSf("%s/%v", uri4id, value)}
+	})
+
+	jt.RegisterRule(`\.?type$`, func(path string, value interface{}) (ok bool, ps []string, vs []interface{}) {
+		return true, []string{""}, []interface{}{nil}
+	})
+
+	jt.RegisterRule(`\.?created_at$`, func(path string, value interface{}) (ok bool, ps []string, vs []interface{}) {
+		return true, []string{sibling(path, "dcterms_modified.literal")}, []interface{}{value}
+	})
+
+	jt.RegisterRule(`\.?title$`, func(path string, value interface{}) (ok bool, ps []string, vs []interface{}) {
+		ok = true
+		ps = []string{sibling(path, "dcterms_title.language"), sibling(path, "dcterms_title.literal")}
+		vs = []interface{}{"en-au", value}
+		return
+	})
+
+	jt.RegisterRule(`\.?doc\.typeName$`, func(path string, value interface{}) (ok bool, ps []string, vs []interface{}) {
+		ok = true
+		ps = []string{uncle(path, "asn_statementLabel.language"), uncle(path, "asn_statementLabel.literal")}
+		vs = []interface{}{"en-au", value}
+		if ts.NotIn(jt.GetStrVal(value), "Learning Area", "Subject") {
+			for _, y := range getYears(mData, path) {
+				ps = append(ps, uncle(path, "dcterms_educationLevel.uri"), uncle(path, "dcterms_educationLevel.prefLabel"))
+				vs = append(vs, mYrlvlUri[y], y)
+			}
+		}
+		return
+	})
+
+	jt.RegisterRule(`\.?code$`, func(path string, value interface{}) (ok bool, ps []string, vs []interface{}) {
+		ok = true
+		ps = []string{sibling(path, "asn_statementNotation.language"), sibling(path, "asn_statementNotation.literal")}
+		vs = []interface{}{"en-au", value}
+
+		// add for specific nodes
+		sval := jt.GetStrVal(value)
+		if sval == "ENG" {
+			if subUri, okSubUri := mLaUri[la]; okSubUri {
+				ps = append(ps, sibling(path, "dcterms_subject.prefLabel"), sibling(path, "dcterms_subject.uri"))
+				vs = append(vs, la, subUri)
+			}
+		}
+		if ts.In(sval, "root", "LA") {
+			ps = append(ps, sibling(path, "dcterms_rights.language"), sibling(path, "dcterms_rights.literal"))
+			vs = append(vs, "en-au", `©Copyright Australian Curriculum, Assessment and Reporting Authority`)
+			ps = append(ps, sibling(path, "dcterms_rightsHolder.language"), sibling(path, "dcterms_rightsHolder.literal"))
+			vs = append(vs, "en-au", `Australian Curriculum, Assessment and Reporting Authority`)
+		}
+
+		// add one for each node
+		ps = append(ps, sibling(path, "asn_authorityStatus.uri"), sibling(path, "asn_indexingStatus.uri"))
+		vs = append(vs, `http://purl.org/ASN/scheme/ASNAuthorityStatus/Original`, `http://purl.org/ASN/scheme/ASNIndexingStatus/No`)
+
+		// add cls for which has children
+		if jt.HasSiblings(path, mLvlSiblings, "children") {
+			ps = append(ps, sibling(path, "cls"))
+			vs = append(vs, "folder")
+		} else {
+			ps = append(ps, sibling(path, "leaf"))
+			vs = append(vs, "true")
+		}
+
+		return
+	})
+
+	jt.RegisterRule(`\.?text$`, func(path string, value interface{}) (ok bool, ps []string, vs []interface{}) {
+		return true, []string{sibling(path, "text")}, []interface{}{value}
+	})
+
+	return jt.TransformUnderFirstRule(mData, data)
+
+	// js = jt.Composite2(mData, func(path string, value interface{}) (p []string, v []interface{}) {
+
+	// 	sval := ""
+	// 	switch s := value.(type) {
+	// 	case string:
+	// 		sval = s
+	// 	}
+
+	// 	switch {
+
+	// 	case sHasSuffix(path, ".type") || path == "type":
+	// 		return nil, nil
+
+	// 	case sHasSuffix(path, ".uuid") || path == "uuid":
+	// 		return []string{
+	// 				jt.NewSibling(path, "Id"),
+	// 			},
+	// 			[]interface{}{
+	// 				fSf("%s/%v", uri4id, value),
+	// 			}
+
+	// 	case sHasSuffix(path, ".created_at") || path == "created_at":
+	// 		return []string{
+	// 				jt.NewSibling(path, "dcterms_modified.literal"),
+	// 			},
+	// 			[]interface{}{
+	// 				value,
+	// 			}
+
+	// 	case sHasSuffix(path, ".title") || path == "title":
+	// 		return []string{
+	// 				jt.NewSibling(path, "dcterms_title.language"),
+	// 				jt.NewSibling(path, "dcterms_title.literal"),
+	// 			},
+	// 			[]interface{}{
+	// 				"en-au",
+	// 				value,
+	// 			}
+
+	// 	case sHasSuffix(path, ".doc.typeName") || path == "doc.typeName":
+	// 		paths, values :=
+	// 			[]string{
+	// 				jt.NewUncle(path, "asn_statementLabel.language"),
+	// 				jt.NewUncle(path, "asn_statementLabel.literal"),
+	// 			},
+	// 			[]interface{}{
+	// 				"en-au",
+	// 				value,
+	// 			}
+	// 		// Derived:
+	// 		if ts.NotIn(sval, "Learning Area", "Subject") {
+	// 			for _, y := range getYears(mData, path) {
+	// 				paths = append(paths, jt.NewUncle(path, "dcterms_educationLevel.uri"))
+	// 				values = append(values, mYrlvlUri[y])
+	// 				paths = append(paths, jt.NewUncle(path, "dcterms_educationLevel.prefLabel"))
+	// 				values = append(values, y)
+	// 			}
+	// 		}
+	// 		return paths, values
+
+	// 	case sHasSuffix(path, ".code") || path == "code":
+	// 		paths, values :=
+	// 			[]string{
+	// 				jt.NewSibling(path, "asn_statementNotation.language"),
+	// 				jt.NewSibling(path, "asn_statementNotation.literal"),
+	// 			},
+	// 			[]interface{}{
+	// 				"en-au",
+	// 				value,
+	// 			}
+	// 		// Derived:
+	// 		if ts.In(sval, "ENG") {
+	// 			subUri, ok := mLaUri[la]
+	// 			if !ok {
+	// 				log.Fatalf("%s has no URI, check mLaUri\n", la)
+	// 			}
+	// 			paths = append(paths, jt.NewSibling(path, "dcterms_subject.prefLabel"))
+	// 			values = append(values, la)
+	// 			paths = append(paths, jt.NewSibling(path, "dcterms_subject.uri"))
+	// 			values = append(values, subUri)
+	// 		}
+	// 		return paths, values
+
+	// 	case sHasSuffix(path, ".text") || path == "text":
+	// 		return []string{path}, []interface{}{value}
+
+	// 	// case "folder":
+
+	// 	default:
+	// 		return []string{path}, []interface{}{value}
+	// 	}
+	// })
+
+	// return js
+}
+
 func treeProc(data []byte, uri4id, la string, mCodeParent, mUidTitle map[string]string) string {
 
 	uri4id = strings.TrimSuffix(uri4id, "/")
@@ -98,7 +295,7 @@ func treeProc(data []byte, uri4id, la string, mCodeParent, mUidTitle map[string]
 	mLvlSiblings, _ := jt.FamilyTree(js)
 
 	// [ dcterms_title, asn_statementLabel ] => dcterms_educationLevel
-	mFieldSibling := jt.GetSiblingPath(js, "dcterms_title", "asn_statementLabel", mLvlSiblings)
+	mFieldSibling := jt.GetSiblingPath("dcterms_title", "asn_statementLabel", mLvlSiblings)
 	for fp, sp := range mFieldSibling {
 		if gjson.Get(js, sp+".literal").String() == "Level" {
 			for _, y := range yearsSplit(gjson.Get(js, fp+".literal").String()) {
@@ -109,13 +306,13 @@ func treeProc(data []byte, uri4id, la string, mCodeParent, mUidTitle map[string]
 		}
 	}
 
-	// "children" => add "cls": "folder"; else add "leaf": "true"
-	allPaths := jt.GetFieldPaths(js, "Id", mLvlSiblings)
+	// "children"? => add "cls": "folder"; else add "leaf": "true"
+	allPaths := jt.GetFieldPaths("Id", mLvlSiblings)
 	allPaths = ts.FM(allPaths, nil, func(i int, e string) string {
 		return jt.ParentPath(e)
 	})
 
-	cPaths := jt.GetFieldPaths(js, "children", mLvlSiblings)
+	cPaths := jt.GetFieldPaths("children", mLvlSiblings)
 	cPaths = ts.FM(cPaths, nil, func(i int, e string) string {
 		return jt.ParentPath(e)
 	})
@@ -137,7 +334,7 @@ func treeProc(data []byte, uri4id, la string, mCodeParent, mUidTitle map[string]
 	}
 
 	// "tags" => "asn_conceptTerm"
-	tPaths := jt.GetFieldPaths(js, "tags", mLvlSiblings)
+	tPaths := jt.GetFieldPaths("tags", mLvlSiblings)
 	for _, tp := range tPaths {
 		js, _ = sjson.Set(js, jt.NewSibling(tp, "asn_conceptTerm"), "SCIENCE_TEACHER_BACKGROUND_INFORMATION")
 		js, _ = sjson.Delete(js, tp)
@@ -187,7 +384,7 @@ func treeProc(data []byte, uri4id, la string, mCodeParent, mUidTitle map[string]
 	})
 
 	// Predicate, deal with 'connections' array
-	cPaths = jt.GetFieldPaths(js, "connections", mLvlSiblings)
+	cPaths = jt.GetFieldPaths("connections", mLvlSiblings)
 	for _, cp := range cPaths {
 
 		block := gjson.Get(js, jt.ParentPath(cp)).String()
