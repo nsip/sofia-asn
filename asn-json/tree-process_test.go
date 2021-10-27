@@ -29,20 +29,8 @@ var (
 	}
 )
 
-func TestTreeProc2(t *testing.T) {
-	os.MkdirAll("./out/", os.ModePerm)
-
-	for file := range mInputLa {
-		data, err := os.ReadFile(`../partition/out/` + file)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		out := treeProc2(data, "http://rdf.curriculum.edu.au/202110", "English")
-		os.WriteFile("./out/"+file, []byte(out), os.ModePerm)
-	}
-}
-
 func TestTreeProc(t *testing.T) {
+	os.MkdirAll("./out/", os.ModePerm)
 
 	dataTree, err := os.ReadFile("../data/tree.pretty.json")
 	if err != nil {
@@ -61,7 +49,7 @@ func TestTreeProc(t *testing.T) {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		out := treeProc(data, "http://rdf.curriculum.edu.au/202110", la, mCodeParent, mUidTitle)
+		out := treeProc2(data, "http://rdf.curriculum.edu.au/202110", la, mCodeParent, mUidTitle)
 		os.WriteFile("./out/"+file, []byte(out), os.ModePerm)
 	}
 }

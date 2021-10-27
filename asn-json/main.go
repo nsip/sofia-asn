@@ -89,10 +89,10 @@ func main() {
 				if err != nil {
 					log.Fatalln(err)
 				}
-				out := treeProc(data, "http://rdf.curriculum.edu.au/202110", la, mCodeParent, mUidTitle)
+				out := treeProc2(data, "http://rdf.curriculum.edu.au/202110", la, mCodeParent, mUidTitle)
 				os.WriteFile("./out/"+file, []byte(out), os.ModePerm)
 				wg.Done()
-				
+
 			}(file, la)
 		}
 

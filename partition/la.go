@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"regexp"
+	"strings"
 
+	strs "github.com/digisan/gotk/strings"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
@@ -150,6 +153,7 @@ NEXTLA:
 	return
 }
 
+// test for restruct_***
 func laRestructure(js string, I int) string {
 
 	for i := 0; i < 100; i++ {
@@ -190,4 +194,27 @@ func laRestructure(js string, I int) string {
 	}
 
 	return ""
+}
+
+func ConnFieldMapping(js, uri string, meta map[string]string) string {
+	r1 := regexp.MustCompile(`"connections":\s*\{[^{}]*\},?`)
+	r2 := regexp.MustCompile(`"[\d\w]{40}":\s*\[([\n\s]*"[\d\w-]+",?[\n\s]*)+\],?`)
+	return r1.ReplaceAllStringFunc(js, func(s string) string {
+		return r2.ReplaceAllStringFunc(s, func(ss string) string {
+			starts, _ := strs.IndexAll(ss, "\"")
+			code := ss[starts[0]+1 : starts[1]]
+			ssMeta := strings.ReplaceAll(ss, code, meta[code])
+			m := make(map[string]string)
+			for i, pos := range starts {
+				if i > 1 && i%2 == 1 {
+					id := ss[starts[i-1]+1 : pos]
+					m[id] = uri + id
+				}
+			}
+			for id, uri := range m {
+				ssMeta = strings.ReplaceAll(ssMeta, id, uri)
+			}
+			return ssMeta
+		})
+	})
 }
