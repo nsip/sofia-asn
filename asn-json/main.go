@@ -5,12 +5,16 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
+	"github.com/digisan/gotk"
 	"github.com/digisan/gotk/filedir"
+	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 )
 
 func main() {
+	defer gotk.TrackTime(time.Now())
 
 	{
 		outdir := "./out/"
@@ -77,6 +81,11 @@ func main() {
 		}
 		mUidTitle := scanNodeIdTitle(dataNode) // title should be node title
 
+		mNodeData, err := jt.Flatten(dataNode)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 		os.MkdirAll("./out", os.ModePerm)
 
 		wg := sync.WaitGroup{}
@@ -89,7 +98,7 @@ func main() {
 				if err != nil {
 					log.Fatalln(err)
 				}
-				out := treeProc2(data, "http://rdf.curriculum.edu.au/202110", la, mCodeParent, mUidTitle)
+				out := treeProc2(data, "http://rdf.curriculum.edu.au/202110", la, mUidTitle, mCodeParent, mNodeData)
 				os.WriteFile("./out/"+file, []byte(out), os.ModePerm)
 				wg.Done()
 

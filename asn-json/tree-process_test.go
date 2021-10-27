@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 )
 
@@ -44,12 +45,17 @@ func TestTreeProc(t *testing.T) {
 	}
 	mUidTitle := scanNodeIdTitle(dataNode) // title should be node title
 
+	mNodeData, err := jt.Flatten(dataNode)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	for file, la := range mInputLa {
 		data, err := os.ReadFile(`../partition/out/` + file)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		out := treeProc2(data, "http://rdf.curriculum.edu.au/202110", la, mCodeParent, mUidTitle)
+		out := treeProc2(data, "http://rdf.curriculum.edu.au/202110", la, mUidTitle, mCodeParent, mNodeData)
 		os.WriteFile("./out/"+file, []byte(out), os.ModePerm)
 	}
 }
