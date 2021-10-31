@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/digisan/gotk"
+	jt "github.com/digisan/json-tool"
+	"github.com/nsip/sofia-asn/tool"
 )
 
 var mEscStr = map[string]string{
@@ -67,42 +69,42 @@ func main() {
 
 	{
 		mInputLa := map[string]string{
-			"la-English.json": "English",
-			// "la-HASS.json":                                   "Humanities and Social Sciences",
-			// "la-HPE.json":                                    "Health and Physical Education",
-			// "la-Languages.json":                              "Languages",
-			// "la-Mathematics.json":                            "Mathematics",
-			// "la-Science.json":                                "Science",
-			// "la-Technologies.json":                           "Technologies",
-			// "la-The Arts.json":                               "The Arts",
-			// "ccp-Cross-curriculum Priorities.json":           "",
-			// "gc-Critical and Creative Thinking.json":         "",
-			// "gc-Digital Literacy.json":                       "",
-			// "gc-Ethical Understanding.json":                  "",
-			// "gc-Intercultural Understanding.json":            "",
-			// "gc-National Literacy Learning Progression.json": "",
-			// "gc-National Numeracy Learning Progression.json": "",
-			// "gc-Personal and Social Capability.json":         "",
+			"la-Languages.json":                              "Languages",
+			"la-English.json":                                "English",
+			"la-HASS.json":                                   "Humanities and Social Sciences",
+			"la-HPE.json":                                    "Health and Physical Education",
+			"la-Mathematics.json":                            "Mathematics",
+			"la-Science.json":                                "Science",
+			"la-Technologies.json":                           "Technologies",
+			"la-The Arts.json":                               "The Arts",
+			"ccp-Cross-curriculum Priorities.json":           "",
+			"gc-Critical and Creative Thinking.json":         "",
+			"gc-Digital Literacy.json":                       "",
+			"gc-Ethical Understanding.json":                  "",
+			"gc-Intercultural Understanding.json":            "",
+			"gc-National Literacy Learning Progression.json": "",
+			"gc-National Numeracy Learning Progression.json": "",
+			"gc-Personal and Social Capability.json":         "",
 		}
 
-		// dataTree, err := os.ReadFile("../data/tree.pretty.json")
-		// if err != nil {
-		// 	log.Fatalln(err)
-		// }
-		// mCodeParent := tool.GetCodeParentMap(dataTree)
+		os.MkdirAll("./out", os.ModePerm)
 
-		// dataNode, err := os.ReadFile("../partition/out/node-meta.json")
-		// if err != nil {
-		// 	log.Fatalln(err)
-		// }
+		dataTree, err := os.ReadFile("../data/tree.pretty.json")
+		if err != nil {
+			log.Fatalln(err)
+		}
+		mCodeParent := tool.GetCodeParentMap(dataTree)
+
+		dataNode, err := os.ReadFile("../partition/out/node-meta.json")
+		if err != nil {
+			log.Fatalln(err)
+		}
 		// mUidTitle := scanNodeIdTitle(dataNode) // title should be node title
 
-		// mNodeData, err := jt.Flatten(dataNode)
-		// if err != nil {
-		// 	log.Fatalln(err)
-		// }
-
-		os.MkdirAll("./out", os.ModePerm)
+		mNodeData, err := jt.Flatten(dataNode)
+		if err != nil {
+			log.Fatalln(err)
+		}
 
 		wg := sync.WaitGroup{}
 		wg.Add(len(mInputLa))
@@ -117,9 +119,9 @@ func main() {
 
 				js := removeEsc(string(data))
 
-				// out := treeProc2(data, "http://rdf.curriculum.edu.au/202110", la, mUidTitle, mCodeParent, mNodeData)
-				out := treeProc3([]byte(js))
-				
+				// out := treeProc2([]byte(js), "http://rdf.curriculum.edu.au/202110", la, mUidTitle, mCodeParent, mNodeData)
+				out := treeProc3([]byte(js), la, mCodeParent, mNodeData)
+
 				out = restoreEsc(out)
 				os.WriteFile("./out/"+file, []byte(out), os.ModePerm)
 				wg.Done()

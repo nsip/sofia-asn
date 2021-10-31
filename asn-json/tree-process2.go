@@ -17,6 +17,9 @@ AGAIN:
 		return yearsSplit(mData[jt.NewSibling(path, "title")].(string))
 	} else {
 		path = jt.ParentPath(path)
+		if path == "" {
+			return nil
+		}
 		goto AGAIN
 	}
 }
@@ -109,7 +112,7 @@ func treeProc2(data []byte, uri4id, la string, mUidTitle, mCodeParent map[string
 		return true, []string{sibling(path, "text")}, []interface{}{value}
 	})
 
-	jt.RegisterRule(`\.?tags$`, func(path string, value interface{}) (ok bool, ps []string, vs []interface{}) {
+	jt.RegisterRule(`\.?tags`, func(path string, value interface{}) (ok bool, ps []string, vs []interface{}) {
 		return true, []string{sibling(path, "asn_conceptTerm")}, []interface{}{"SCIENCE_TEACHER_BACKGROUND_INFORMATION"}
 	})
 
