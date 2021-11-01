@@ -1,16 +1,14 @@
 package main
 
 var (
-	contextRoot = `{
-		"@context": {
+	context = `"@context": {
 		  "asn": "http://purl.org/ASN/schema/core/",
 		  "dc": "http://purl.org/dc/terms/",
 		  "gem": "http://purl.org/gem/qualifiers/",
 		  "skos": "http://www.w3.org/2004/02/skos/core#",
 		  "xsd": "http://www.w3.org/2001/XMLSchema#",
 		  "@language": "en-au"
-		}
-	  }`
+		}`
 
 	mPrefNamespace = map[string]string{
 		"asn": "http://purl.org/ASN/schema/core/",
@@ -29,7 +27,7 @@ var (
 	mFieldRepl = map[string]string{
 		"text":     "dc:description",
 		"children": "gem:hasChild",
-		"id":       "@id",
+		"Id":       "@Id",
 	}
 
 	mFieldRemove = map[string]struct{}{

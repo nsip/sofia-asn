@@ -18,7 +18,7 @@ func TestAddCtx(t *testing.T) {
 		panic(err)
 	}
 	js := string(data)
-	js = addContext(js, contextRoot)
+	js = addContext(js, context)
 	js = replace(js)
 
 	os.WriteFile("./out/test-ld.json", []byte(js), os.ModePerm)
