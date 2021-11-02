@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 
 	strs "github.com/digisan/gotk/strings"
 	jt "github.com/digisan/json-tool"
@@ -44,11 +46,8 @@ func findIdLinkage(js string, mFamilyTree map[string][]string) (mIdLink2P, mIdLi
 	return
 }
 
-func main() {
-
-	os.MkdirAll("./out", os.ModePerm)
-
-	data, err := os.ReadFile("../asn-json/out/la-English.json")
+func cvt2jsonld(asnpath string) {
+	data, err := os.ReadFile(asnpath)
 	if err != nil {
 		panic(err)
 	}
@@ -168,10 +167,47 @@ func main() {
 		return ret + s
 	})
 
-	// js, _ = sjson.SetRaw(js, "context", context)
-	// js = strings.ReplaceAll(js, `"context":`, `"@context":`)
-
 	js = addContext(js, context)
 
-	os.WriteFile("./out/la-English.json", []byte(js), os.ModePerm)
+	name := filepath.Base(asnpath) + ".json"
+	jsonldpath := filepath.Join("./out/", name)
+	os.WriteFile(jsonldpath, []byte(js), os.ModePerm)
+}
+
+func main() {
+
+	mInputLa := map[string]string{
+		"la-Languages.json":                              "Languages",
+		"la-English.json":                                "English",
+		"la-HASS.json":                                   "Humanities and Social Sciences",
+		"la-HPE.json":                                    "Health and Physical Education",
+		"la-Mathematics.json":                            "Mathematics",
+		"la-Science.json":                                "Science",
+		"la-Technologies.json":                           "Technologies",
+		"la-The Arts.json":                               "The Arts",
+		"ccp-Cross-curriculum Priorities.json":           "",
+		"gc-Critical and Creative Thinking.json":         "",
+		"gc-Digital Literacy.json":                       "",
+		"gc-Ethical Understanding.json":                  "",
+		"gc-Intercultural Understanding.json":            "",
+		"gc-National Literacy Learning Progression.json": "",
+		"gc-National Numeracy Learning Progression.json": "",
+		"gc-Personal and Social Capability.json":         "",
+	}
+
+	os.MkdirAll("./out", os.ModePerm)
+
+	wg := sync.WaitGroup{}
+	wg.Add(len(mInputLa))
+
+	for file, la := range mInputLa {
+		go func(file, la string) {
+
+			cvt2jsonld(filepath.Join("../asn-json/out/", file))
+			wg.Done()
+
+		}(file, la)
+	}
+	wg.Wait()
+
 }

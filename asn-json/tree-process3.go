@@ -30,13 +30,13 @@ var (
 
 var (
 	mRES = map[string]string{
-		"uuid":               `"uuid":\s*"[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}",?`,
-		"type":               `"type":\s*"\w+",?`,
-		"created_at":         `"created_at":\s*"[^"]+",?`,
-		"title":              `"title":\s*"[^"]+",?`,
-		"doc.typeName":       `"doc":\s*\{[^{}]+\},?`,
-		"code":               `"code":\s*"[^"]+",?`,
-		"text":               `"text":\s*"[^"]+",?`,
+		"uuid":         `"uuid":\s*"[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}",?`,
+		"type":         `"type":\s*"\w+",?`,
+		"created_at":   `"created_at":\s*"[^"]+",?`,
+		"title":        `"title":\s*"[^"]+",?`,
+		"doc.typeName": `"doc":\s*\{[^{}]+\},?`,
+		"code":         `"code":\s*"[^"]+",?`,
+		// "text":               `"text":\s*"[^"]+",?`,
 		"tag":                `"tags":\s*\{[^{}]+\},?`,
 		"connections.Levels": `"Levels":\s*\[[^\[\]]+\],?`,
 		"connections.OI":     `"Organising Ideas":\s*\[[^\[\]]+\],?`,
@@ -46,13 +46,13 @@ var (
 	}
 
 	mRE4Path = map[string]*regexp.Regexp{
-		"uuid":               regexp.MustCompile(`\.?uuid$`),
-		"type":               regexp.MustCompile(`\.?type$`),
-		"created_at":         regexp.MustCompile(`\.?created_at$`),
-		"title":              regexp.MustCompile(`\.?title$`),
-		"doc.typeName":       regexp.MustCompile(`\.?doc\.typeName$`),
-		"code":               regexp.MustCompile(`\.?code$`),
-		"text":               regexp.MustCompile(`\.?text$`),
+		"uuid":         regexp.MustCompile(`\.?uuid$`),
+		"type":         regexp.MustCompile(`\.?type$`),
+		"created_at":   regexp.MustCompile(`\.?created_at$`),
+		"title":        regexp.MustCompile(`\.?title$`),
+		"doc.typeName": regexp.MustCompile(`\.?doc\.typeName$`),
+		"code":         regexp.MustCompile(`\.?code$`),
+		// "text":               regexp.MustCompile(`\.?text$`),
 		"tag":                regexp.MustCompile(`\.?tags\.`),
 		"connections.Levels": regexp.MustCompile(`\.?connections\.Levels\.\d+$`),
 		"connections.OI":     regexp.MustCompile(`\.?connections\.Organising Ideas\.\d+$`),
@@ -173,6 +173,11 @@ func proc(
 
 		retIS := fSf(`"asn_indexingStatus": { "uri": "%s" }`, `http://purl.org/ASN/scheme/ASNIndexingStatus/No`)
 
+		retTxt := ""
+		if !gjson.Get(js, jt.NewSibling(path, "text")).Exists() {
+			retTxt = `"text": null`
+		}
+
 		retSub := ``
 		if ts.In(value, "ENG", "HAS", "HPE", "LAN", "MAT", "SCI", "TEC", "ART") {
 			retS := []string{}
@@ -196,15 +201,15 @@ func proc(
 		}
 
 		rets := []string{}
-		for _, r := range []string{retSN, retAS, retIS, retSub, retRT, retRTH, retCLS, retLEAF} {
+		for _, r := range []string{retSN, retAS, retIS, retTxt, retSub, retRT, retRTH, retCLS, retLEAF} {
 			if r != "" {
 				rets = append(rets, r)
 			}
 		}
 		return true, sJoin(rets, ",")
 
-	case "text":
-		return true, fSf(`"text": "%s"`, value)
+	// case "text":
+	// 	return true, fSf(`"text": "%s"`, value)
 
 	case "tag":
 		return true, fSf(`"asn_conceptTerm": "%s"`, "SCIENCE_TEACHER_BACKGROUND_INFORMATION")
@@ -367,7 +372,7 @@ func treeProc3(data []byte, la string, mCodeParent map[string]string, mNodeData 
 			log.Fatalln(k, v)
 		}
 	}
-	fmt.Println(len(mStat), "paths")
+	// fmt.Println(len(mStat), "paths")
 
 	return js
 }
