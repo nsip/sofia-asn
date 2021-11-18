@@ -95,7 +95,7 @@ func proc(
 	la, uri4id string,
 	mCodeParent map[string]string,
 	mNodeData map[string]interface{},
-	getPathWithFieldValue func() string,
+	getPathWithDocType func() string,
 	getPathWithCode func() string,
 
 ) (bool, string) {
@@ -119,7 +119,7 @@ func proc(
 
 	case "doc.typeName":
 
-		path := getPathWithFieldValue()
+		path := getPathWithDocType()
 
 		// "asn_statementLabel"
 		retSL := fSf(`"asn_statementLabel": { "language": "%s", "literal": "%s" }`, "en-au", value)
