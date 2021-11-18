@@ -47,6 +47,7 @@ func findIdLinkage(js string, mFamilyTree map[string][]string) (mIdLink2P, mIdLi
 }
 
 func cvt2jsonld(asnpath string) {
+
 	data, err := os.ReadFile(asnpath)
 	if err != nil {
 		panic(err)
@@ -76,14 +77,14 @@ func cvt2jsonld(asnpath string) {
 		return ""
 	})
 
-	rId := regexp.MustCompile(`"@Id":\s*"http:[^"]+",?`)
+	rId := regexp.MustCompile(`"@id":\s*"http:[^"]+",?`)
 	js = rId.ReplaceAllStringFunc(js, func(s string) (ret string) {
 
 		id := tool.FetchValue(s, "|")
 
 		pids := []string{}
 		for _, pid := range mIdLink2P[id] {
-			pids = append(pids, fmt.Sprintf(`{ "@Id": "%s" }`, pid))
+			pids = append(pids, fmt.Sprintf(`{ "@id": "%s" }`, pid))
 		}
 		pidstr := ""
 		if len(pids) > 0 {

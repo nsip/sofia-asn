@@ -27,7 +27,7 @@ var (
 	mFieldRepl = map[string]string{
 		"text":     "dc:description",
 		"children": "gem:hasChild",
-		"Id":       "@Id",
+		"Id":       "@id",
 	}
 
 	mFieldRemove = map[string]struct{}{

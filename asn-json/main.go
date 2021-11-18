@@ -3,13 +3,11 @@ package main
 import (
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/digisan/gotk"
-	"github.com/digisan/gotk/filedir"
 	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 )
@@ -36,57 +34,57 @@ func restoreEsc(js string) string {
 func main() {
 	defer gotk.TrackTime(time.Now())
 
-	{
-		outdir := "./out/"
-		outfile := "asn-node.json"
-		os.MkdirAll(outdir, os.ModePerm)
-		outpath := filepath.Join(outdir, outfile)
+	// {
+	// 	outdir := "./out/"
+	// 	outfile := "asn-node.json"
+	// 	os.MkdirAll(outdir, os.ModePerm)
+	// 	outpath := filepath.Join(outdir, outfile)
 
-		if !filedir.FileExists(outpath) {
-			data, err := os.ReadFile("../partition/out/node-meta.json")
-			if err != nil {
-				panic(err)
-			}
-			nodeProc(data, outdir, outfile, "../data/tree.pretty.json", "http://rdf.curriculum.edu.au/202110/")
-		}
+	// 	if !filedir.FileExists(outpath) {
+	// 		data, err := os.ReadFile("../partition/out/node-meta.json")
+	// 		if err != nil {
+	// 			panic(err)
+	// 		}
+	// 		nodeProc(data, outdir, outfile, "../data/tree.pretty.json", "http://rdf.curriculum.edu.au/202110/")
+	// 	}
 
-		// 	/////
+	// 	// 	/////
 
-		data, err := os.ReadFile(outpath)
-		if err != nil {
-			log.Fatalln(err)
-		}
+	// 	data, err := os.ReadFile(outpath)
+	// 	if err != nil {
+	// 		log.Fatalln(err)
+	// 	}
 
-		mIdBlock, _ := getIdBlock(string(data))
+	// 	mIdBlock, _ := getIdBlock(string(data))
 
-		inpath4exp := outpath
-		outexp := childrenRepl(inpath4exp, mIdBlock)
-		// os.WriteFile("./out/asnexp.json", []byte(outexp), os.ModePerm)
+	// 	inpath4exp := outpath
+	// 	outexp := childrenRepl(inpath4exp, mIdBlock)
+	// 	// os.WriteFile("./out/asnexp.json", []byte(outexp), os.ModePerm)
 
-		rootWholeBlock := getRootWholeObject(outexp)
-		os.WriteFile("./out/asn-node-one.json", []byte(rootWholeBlock), os.ModePerm)
-	}
+	// 	rootWholeBlock := getRootWholeObject(outexp)
+	// 	os.WriteFile("./out/asn-node-one.json", []byte(rootWholeBlock), os.ModePerm)
+	// }
 
 	//////////////////////////////////////////////////////////////////////
 
 	{
 		mInputLa := map[string]string{
-			"la-Languages.json":                              "Languages",
-			"la-English.json":                                "English",
-			"la-HASS.json":                                   "Humanities and Social Sciences",
-			"la-HPE.json":                                    "Health and Physical Education",
-			"la-Mathematics.json":                            "Mathematics",
-			"la-Science.json":                                "Science",
-			"la-Technologies.json":                           "Technologies",
-			"la-The Arts.json":                               "The Arts",
-			"ccp-Cross-curriculum Priorities.json":           "",
-			"gc-Critical and Creative Thinking.json":         "",
-			"gc-Digital Literacy.json":                       "",
-			"gc-Ethical Understanding.json":                  "",
-			"gc-Intercultural Understanding.json":            "",
-			"gc-National Literacy Learning Progression.json": "",
-			"gc-National Numeracy Learning Progression.json": "",
-			"gc-Personal and Social Capability.json":         "",
+			// "la-Languages.json":                              "Languages",
+			// "la-English.json":                                "English",
+			// "la-HASS.json":                                   "Humanities and Social Sciences",
+			// "la-HPE.json":                                    "Health and Physical Education",
+			// "la-Mathematics.json":                            "Mathematics",
+			// "la-Science.json":                                "Science",
+			// "la-Technologies.json":                           "Technologies",
+			// "la-The Arts.json":                               "The Arts",
+			// "ccp-Cross-curriculum Priorities.json":           "",
+			"gc-Critical and Creative Thinking.json": "GC",
+			// "gc-Digital Literacy.json":                       "GC",
+			// "gc-Ethical Understanding.json":                  "GC",
+			// "gc-Intercultural Understanding.json":            "GC",
+			// "gc-National Literacy Learning Progression.json": "GC",
+			// "gc-National Numeracy Learning Progression.json": "GC",
+			// "gc-Personal and Social Capability.json":         "GC",
 		}
 
 		os.MkdirAll("./out", os.ModePerm)
@@ -125,7 +123,7 @@ func main() {
 				out := treeProc3([]byte(js), la, mCodeParent, mNodeData)
 
 				out = restoreEsc(out)
-				
+
 				os.WriteFile("./out/"+file, []byte(out), os.ModePerm)
 				wg.Done()
 

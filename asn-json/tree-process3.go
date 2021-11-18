@@ -9,10 +9,8 @@ import (
 
 	"github.com/digisan/gotk"
 	"github.com/digisan/gotk/slice/ti"
-	"github.com/digisan/gotk/slice/to"
 	"github.com/digisan/gotk/slice/ts"
 	"github.com/digisan/gotk/slice/tso"
-	strs "github.com/digisan/gotk/strings"
 	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 	"github.com/tidwall/gjson"
@@ -20,7 +18,6 @@ import (
 
 var (
 	fSf        = fmt.Sprintf
-	sIndex     = strings.Index
 	sJoin      = strings.Join
 	sTrim      = strings.Trim
 	sLastIndex = strings.LastIndex
@@ -30,13 +27,13 @@ var (
 
 var (
 	mRES = map[string]string{
-		"uuid":         `"uuid":\s*"[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}",?`,
-		"type":         `"type":\s*"\w+",?`,
-		"created_at":   `"created_at":\s*"[^"]+",?`,
-		"title":        `"title":\s*"[^"]+",?`,
-		"doc.typeName": `"doc":\s*\{[^{}]+\},?`,
-		"code":         `"code":\s*"[^"]+",?`,
 		// "text":               `"text":\s*"[^"]+",?`,
+		"uuid":               `"uuid":\s*"[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}",?`,
+		"type":               `"type":\s*"\w+",?`,
+		"created_at":         `"created_at":\s*"[^"]+",?`,
+		"title":              `"title":\s*"[^"]+",?`,
+		"doc.typeName":       `"doc":\s*\{[^{}]+\},?`,
+		"code":               `"code":\s*"[^"]+",?`,
 		"tag":                `"tags":\s*\{[^{}]+\},?`,
 		"connections.Levels": `"Levels":\s*\[[^\[\]]+\],?`,
 		"connections.OI":     `"Organising Ideas":\s*\[[^\[\]]+\],?`,
@@ -46,13 +43,13 @@ var (
 	}
 
 	mRE4Path = map[string]*regexp.Regexp{
-		"uuid":         regexp.MustCompile(`\.?uuid$`),
-		"type":         regexp.MustCompile(`\.?type$`),
-		"created_at":   regexp.MustCompile(`\.?created_at$`),
-		"title":        regexp.MustCompile(`\.?title$`),
-		"doc.typeName": regexp.MustCompile(`\.?doc\.typeName$`),
-		"code":         regexp.MustCompile(`\.?code$`),
 		// "text":               regexp.MustCompile(`\.?text$`),
+		"uuid":               regexp.MustCompile(`\.?uuid$`),
+		"type":               regexp.MustCompile(`\.?type$`),
+		"created_at":         regexp.MustCompile(`\.?created_at$`),
+		"title":              regexp.MustCompile(`\.?title$`),
+		"doc.typeName":       regexp.MustCompile(`\.?doc\.typeName$`),
+		"code":               regexp.MustCompile(`\.?code$`),
 		"tag":                regexp.MustCompile(`\.?tags\.`),
 		"connections.Levels": regexp.MustCompile(`\.?connections\.Levels\.\d+$`),
 		"connections.OI":     regexp.MustCompile(`\.?connections\.Organising Ideas\.\d+$`),
@@ -73,59 +70,39 @@ var (
 	}
 )
 
-func getPathByFieldValuePos(
-	js, name, value string,
-	pos int,
-	dataPaths *[]string,
-	dataValues *[]interface{},
-) string {
-	for i, path := range *dataPaths {
-		val := (*dataValues)[i]
-		if value == val && mRE4Path[name].MatchString(path) {
-			rst := gjson.Get(js, jt.ParentPath(path)).String()
-			if candidate := sIndex(js, rst); candidate != -1 {
-				if candidate-(pos+len(name)+3) < 3 {
-					ts.DelEle(dataPaths, i)
-					to.DelEle(dataValues, i)
-					return path
-				}
-			}
-		}
+func fn4GetPathByProp(js, prop string) func() string {
+	idx := -1
+	paths, _ := jt.GetAllLeafPaths(js)
+	paths = jt.GetLeafPathsOrderly(prop, paths)
+	return func() string {
+		idx++
+		return paths[idx]
 	}
-	log.Fatalln(name, value, pos)
-	return ""
 }
 
+var (
+	prevDocTypePath = ""
+	retEL           = `` // used by 'Level' & its descendants
+)
+
 func proc(
+
 	js, s, name, value string,
 	mLvlSiblings map[int][]string,
 	dataPaths *[]string,
 	dataValues *[]interface{},
-	mData4Yr map[string]interface{},
+	mData map[string]interface{},
 	la, uri4id string,
 	mCodeParent map[string]string,
 	mNodeData map[string]interface{},
-	mStat map[string]int,
-	mRELocGrp map[string][]int,
-	mRELocIdx map[string]int,
+	getPathWithFieldValue func() string,
+	getPathWithCode func() string,
+
 ) (bool, string) {
 
 	// if name == "doc.typeName" {
 	// 	fmt.Println(name, s)
 	// }
-
-	if mRELocGrp[s] == nil {
-		mRELocGrp[s], _ = strs.IndexAll(js, s)
-	}
-	pos := mRELocGrp[s][mRELocIdx[s]]
-	mRELocIdx[s]++
-
-	//
-	// get 'path' once, mData removes returned path record
-	//
-	// path := getPathByFieldValuePos(js, name, value, pos, mData)
-	// fmt.Println(path)
-	// mStat[path]++ // audit, make sure one path only for once use only
 
 	switch name {
 	case "uuid":
@@ -142,30 +119,36 @@ func proc(
 
 	case "doc.typeName":
 
+		path := getPathWithFieldValue()
+
+		// "asn_statementLabel"
 		retSL := fSf(`"asn_statementLabel": { "language": "%s", "literal": "%s" }`, "en-au", value)
 
-		retEL := ``
-		if la != "" && ts.NotIn(value, "Learning Area", "Subject") {
-			path := getPathByFieldValuePos(js, name, value, pos, dataPaths, dataValues)
-
-			outArrs := []string{}
-			for _, y := range getYears(mData4Yr, path) {
-				outArrs = append(outArrs, fSf(`{ "uri": "%s", "prefLabel": "%s" }`, mYrlvlUri[y], y))
+		// "dcterms_educationLevel"
+		if value == "Level" { // see doc.typeName: 'Level', update global retEL
+			if la != "" {
+				outArrs := []string{}
+				for _, y := range getYears(mData, path) {
+					outArrs = append(outArrs, fSf(`{ "uri": "%s", "prefLabel": "%s" }`, mYrlvlUri[y], y))
+				}
+				if len(outArrs) > 0 {
+					retEL = sJoin(outArrs, ",")
+				}
 			}
-			if len(outArrs) > 0 {
-				retEL = sJoin(outArrs, ",")
-			}
-		}
-		if retEL != "" {
 			retEL = fSf(`"dcterms_educationLevel": [%s]`, retEL)
+			prevDocTypePath = path
 		}
 
-		ret := sJoin([]string{retSL, retEL}, ",")
-		return true, sTrim(ret, ",")
+		// only children path can keep retEL
+		if strings.Count(path, ".") < strings.Count(prevDocTypePath, ".") {
+			retEL = ""
+		}
+
+		return true, sTrim(sJoin([]string{retSL, retEL}, ","), ",")
 
 	case "code":
 
-		path := getPathByFieldValuePos(js, name, value, pos, dataPaths, dataValues)
+		path := getPathWithCode()
 
 		retSN := fSf(`"asn_statementNotation": { "language": "%s", "literal": "%s" }`, "en-au", value)
 
@@ -269,10 +252,7 @@ func proc(
 func treeProc3(data []byte, la string, mCodeParent map[string]string, mNodeData map[string]interface{}) string {
 
 	var (
-		mStat     = make(map[string]int)
-		mRELocGrp = make(map[string][]int)
-		mRELocIdx = make(map[string]int)
-		uri4id    = "http://rdf.curriculum.edu.au/202110"
+		uri4id = "http://rdf.curriculum.edu.au/202110"
 	)
 
 	js := string(data)
@@ -281,11 +261,6 @@ func treeProc3(data []byte, la string, mCodeParent map[string]string, mNodeData 
 	mData, err := jt.Flatten(data)
 	if err != nil {
 		log.Fatalln(err)
-	}
-
-	mData4Yr := make(map[string]interface{})
-	for k, v := range mData {
-		mData4Yr[k] = v
 	}
 
 	sortRule := func(s1, s2 string) bool {
@@ -325,6 +300,9 @@ func treeProc3(data []byte, la string, mCodeParent map[string]string, mNodeData 
 	re4json, mRE4Each := reMerged()
 	// fmt.Println(re4json, len(mRE4Each))
 
+	getPathWithTypeName := fn4GetPathByProp(js, "typeName")
+	getPathWithCode := fn4GetPathByProp(js, "code")
+
 	js = re4json.ReplaceAllStringFunc(js, func(s string) string {
 
 		hasComma := false
@@ -347,14 +325,13 @@ func treeProc3(data []byte, la string, mCodeParent map[string]string, mNodeData 
 					mLvlSiblings,
 					&dataPaths,
 					&dataValues,
-					mData4Yr,
+					mData,
 					la,
 					uri4id,
 					mCodeParent,
 					mNodeData,
-					mStat,
-					mRELocGrp,
-					mRELocIdx,
+					getPathWithTypeName,
+					getPathWithCode,
 				); ok {
 					if hasComma && repl != "" {
 						return repl + ","
@@ -365,14 +342,6 @@ func treeProc3(data []byte, la string, mCodeParent map[string]string, mNodeData 
 		}
 		return s
 	})
-
-	// audit, make sure one path only for once use only
-	for k, v := range mStat {
-		if v > 1 {
-			log.Fatalln(k, v)
-		}
-	}
-	// fmt.Println(len(mStat), "paths")
 
 	return js
 }
