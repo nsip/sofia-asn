@@ -99,7 +99,8 @@ func reStructMath(js string) string {
 
 					// fetch LA dest path
 					if I == 1 {
-						mLA2Path[code] = fSf("children.%d.children.%d.children.%d.children.%d.children", I, i, j, k)
+						// mLA2Path[code] = fSf("children.%d.children.%d.children.%d.children.%d.children", I, i, j, k)
+						mLA2Path[code] = fSf("children.%d.children.%d.children.%d.children.%d.asn_hasLevel", I, i, j, k)
 					}
 				}
 			}
@@ -107,7 +108,7 @@ func reStructMath(js string) string {
 	}
 
 	for laCode, path := range mLA2Path {
-		path += fmt.Sprintf(".%d", len(gjson.Get(js, path).Array())) // modify path, append to the last child
+		// path += fmt.Sprintf(".%d", len(gjson.Get(js, path).Array())) // modify path, append to the last child
 		content := mAS[mLACode2ASCode[laCode]]
 		js, _ = sjson.SetRaw(js, path, content)
 	}

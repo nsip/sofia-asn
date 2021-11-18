@@ -69,22 +69,22 @@ func main() {
 
 	{
 		mInputLa := map[string]string{
-			// "la-Languages.json":                              "Languages",
-			// "la-English.json":                                "English",
-			// "la-HASS.json":                                   "Humanities and Social Sciences",
-			// "la-HPE.json":                                    "Health and Physical Education",
-			// "la-Mathematics.json":                            "Mathematics",
-			// "la-Science.json":                                "Science",
-			// "la-Technologies.json":                           "Technologies",
-			// "la-The Arts.json":                               "The Arts",
-			// "ccp-Cross-curriculum Priorities.json":           "",
-			"gc-Critical and Creative Thinking.json": "GC",
-			// "gc-Digital Literacy.json":                       "GC",
-			// "gc-Ethical Understanding.json":                  "GC",
-			// "gc-Intercultural Understanding.json":            "GC",
-			// "gc-National Literacy Learning Progression.json": "GC",
-			// "gc-National Numeracy Learning Progression.json": "GC",
-			// "gc-Personal and Social Capability.json":         "GC",
+			"la-Languages.json":                              "Languages",
+			"la-English.json":                                "English",
+			"la-HASS.json":                                   "Humanities and Social Sciences",
+			"la-HPE.json":                                    "Health and Physical Education",
+			"la-Mathematics.json":                            "Mathematics",
+			"la-Science.json":                                "Science",
+			"la-Technologies.json":                           "Technologies",
+			"la-The Arts.json":                               "The Arts",
+			"ccp-Cross-curriculum Priorities.json":           "CCP",
+			"gc-Critical and Creative Thinking.json":         "GC-CCT",
+			"gc-Digital Literacy.json":                       "GC-DL",
+			"gc-Ethical Understanding.json":                  "GC-EU",
+			"gc-Intercultural Understanding.json":            "GC-IU",
+			"gc-National Literacy Learning Progression.json": "GC-NLLP",
+			"gc-National Numeracy Learning Progression.json": "GC-NNLP",
+			"gc-Personal and Social Capability.json":         "GC-PSC",
 		}
 
 		os.MkdirAll("./out", os.ModePerm)

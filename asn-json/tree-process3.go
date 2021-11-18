@@ -4,13 +4,9 @@ import (
 	"fmt"
 	"log"
 	"regexp"
-	"strconv"
 	"strings"
 
-	"github.com/digisan/gotk"
-	"github.com/digisan/gotk/slice/ti"
 	"github.com/digisan/gotk/slice/ts"
-	"github.com/digisan/gotk/slice/tso"
 	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 	"github.com/tidwall/gjson"
@@ -89,8 +85,6 @@ func proc(
 
 	js, s, name, value string,
 	mLvlSiblings map[int][]string,
-	dataPaths *[]string,
-	dataValues *[]interface{},
 	mData map[string]interface{},
 	la, uri4id string,
 	mCodeParent map[string]string,
@@ -125,8 +119,8 @@ func proc(
 		retSL := fSf(`"asn_statementLabel": { "language": "%s", "literal": "%s" }`, "en-au", value)
 
 		// "dcterms_educationLevel"
-		if value == "Level" { // see doc.typeName: 'Level', update global retEL
-			if la != "" {
+		if ts.NotIn(la, "CCP", "GC-NLLP", "GC-NNLP") {
+			if value == "Level" { // see doc.typeName: 'Level', update global retEL
 				outArrs := []string{}
 				for _, y := range getYears(mData, path) {
 					outArrs = append(outArrs, fSf(`{ "uri": "%s", "prefLabel": "%s" }`, mYrlvlUri[y], y))
@@ -134,13 +128,14 @@ func proc(
 				if len(outArrs) > 0 {
 					retEL = sJoin(outArrs, ",")
 				}
+				retEL = fSf(`"dcterms_educationLevel": [%s]`, retEL)
+				prevDocTypePath = path
 			}
-			retEL = fSf(`"dcterms_educationLevel": [%s]`, retEL)
-			prevDocTypePath = path
-		}
-
-		// only children path can keep retEL
-		if strings.Count(path, ".") < strings.Count(prevDocTypePath, ".") {
+			// only children path can keep retEL
+			if strings.Count(path, ".") < strings.Count(prevDocTypePath, ".") {
+				retEL = ""
+			}
+		} else {
 			retEL = ""
 		}
 
@@ -263,40 +258,6 @@ func treeProc3(data []byte, la string, mCodeParent map[string]string, mNodeData 
 		log.Fatalln(err)
 	}
 
-	sortRule := func(s1, s2 string) bool {
-		a1, a2 := []int{}, []int{}
-		for i, s := range []string{s1, s2} {
-			var a *[]int
-			if i == 0 {
-				a = &a1
-			} else {
-				a = &a2
-			}
-			for _, seg := range sSplit(s, ".") {
-				if gotk.IsNumeric(seg) {
-					n, _ := strconv.Atoi(seg)
-					*a = append(*a, n)
-				}
-			}
-		}
-		lmin := ti.Min(len(a1), len(a2))
-		for i := 0; i < lmin; i++ {
-			n1, n2 := a1[i], a2[i]
-			switch {
-			case n1 < n2:
-				return true
-			case n1 > n2:
-				return false
-			default:
-				continue
-			}
-		}
-		return true
-	}
-
-	dataPaths, dataValues := tso.Map2KVs(mData, sortRule, nil)
-	// fmt.Println(len(dataPaths), len(dataValues))
-
 	re4json, mRE4Each := reMerged()
 	// fmt.Println(re4json, len(mRE4Each))
 
@@ -323,8 +284,6 @@ func treeProc3(data []byte, la string, mCodeParent map[string]string, mNodeData 
 					name,
 					tool.FetchValue(s, "|"),
 					mLvlSiblings,
-					&dataPaths,
-					&dataValues,
 					mData,
 					la,
 					uri4id,

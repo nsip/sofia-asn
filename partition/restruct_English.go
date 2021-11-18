@@ -51,7 +51,7 @@ func reStructEng(js string) string {
 		if code == "" {
 			break
 		}
-		// fmt.Println(code)
+		// fmt.Println(code) // AS
 
 		for i := 0; i < 100; i++ {
 
@@ -60,7 +60,7 @@ func reStructEng(js string) string {
 			if code == "" {
 				break
 			}
-			// fmt.Printf("\t%s\n", code)
+			// fmt.Printf("\t%s\n", code) // ASENG
 
 			// only deal with English ******************************************
 			if code != "ENG" && code != "ASENG" {
@@ -73,7 +73,7 @@ func reStructEng(js string) string {
 				if code == "" {
 					break
 				}
-				// fmt.Printf("\t\t%s\n", code)
+				// fmt.Printf("\t\t%s\n", code) // ASENGENG
 
 				for k := 0; k < 100; k++ {
 					path := fSf("children.%d.children.%d.children.%d.children.%d.code", I, i, j, k)
@@ -81,7 +81,7 @@ func reStructEng(js string) string {
 					if code == "" {
 						break
 					}
-					// fmt.Printf("\t\t\t%s\n", code)
+					// fmt.Printf("\t\t\t%s\n", code) // ASENGFYL ASENGY1L ASENGY2L...
 
 					for l := 0; l < 100; l++ {
 						path := fSf("children.%d.children.%d.children.%d.children.%d.children.%d.code", I, i, j, k, l)
@@ -89,7 +89,7 @@ func reStructEng(js string) string {
 						if code == "" {
 							break
 						}
-						// fmt.Printf("\t\t\t\t%s\n", code)
+						// fmt.Printf("\t\t\t\t%s\n", code) // ASENGFY ASENGY1 ASENGY2...
 
 						// fetch content from AS
 						if I == 0 {
@@ -99,7 +99,8 @@ func reStructEng(js string) string {
 
 					// fetch LA dest path
 					if I == 1 {
-						mLA2Path[code] = fSf("children.%d.children.%d.children.%d.children.%d.children", I, i, j, k)
+						// mLA2Path[code] = fSf("children.%d.children.%d.children.%d.children.%d.children", I, i, j, k) // not to be one of children
+						mLA2Path[code] = fSf("children.%d.children.%d.children.%d.children.%d.asn_hasLevel", I, i, j, k) // separate key as 'asn_hasLevel'
 					}
 				}
 			}
@@ -107,7 +108,7 @@ func reStructEng(js string) string {
 	}
 
 	for laCode, path := range mLA2Path {
-		path += fmt.Sprintf(".%d", len(gjson.Get(js, path).Array())) // modify path, append to the last child
+		// path += fmt.Sprintf(".%d", len(gjson.Get(js, path).Array())) // modify path, append to the last child		
 		content := mAS[mLACode2ASCode[laCode]]
 		js, _ = sjson.SetRaw(js, path, content)
 	}
