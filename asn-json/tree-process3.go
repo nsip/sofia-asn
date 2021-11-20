@@ -66,20 +66,15 @@ var (
 	}
 )
 
-func fn4GetPathByProp(js, prop string) func() string {
-	idx := -1
-	paths, _ := jt.GetAllLeafPaths(js)
+func fnGetPathByProp(prop string, paths []string, info string) func() string {
+	var idx int64 = -1
 	paths = jt.GetLeafPathsOrderly(prop, paths)
 	return func() string {
 		idx++
+		// fmt.Println(prop, idx, info)
 		return paths[idx]
 	}
 }
-
-var (
-	prevDocTypePath = ""
-	retEL           = `` // used by 'Level' & its descendants
-)
 
 func proc(
 
@@ -89,8 +84,11 @@ func proc(
 	la, uri4id string,
 	mCodeParent map[string]string,
 	mNodeData map[string]interface{},
-	getPathWithDocType func() string,
-	getPathWithCode func() string,
+	fnPathWithDocType func() string,
+	fnPathWithCode func() string,
+	// static for filling
+	pPrevDocTypePath *string,
+	pRetEL *string,
 
 ) (bool, string) {
 
@@ -113,7 +111,7 @@ func proc(
 
 	case "doc.typeName":
 
-		path := getPathWithDocType()
+		path := fnPathWithDocType()
 
 		// "asn_statementLabel"
 		retSL := fSf(`"asn_statementLabel": { "language": "%s", "literal": "%s" }`, "en-au", value)
@@ -126,24 +124,24 @@ func proc(
 					outArrs = append(outArrs, fSf(`{ "uri": "%s", "prefLabel": "%s" }`, mYrlvlUri[y], y))
 				}
 				if len(outArrs) > 0 {
-					retEL = sJoin(outArrs, ",")
+					*pRetEL = sJoin(outArrs, ",")
 				}
-				retEL = fSf(`"dcterms_educationLevel": [%s]`, retEL)
-				prevDocTypePath = path
+				*pRetEL = fSf(`"dcterms_educationLevel": [%s]`, *pRetEL)
+				*pPrevDocTypePath = path
 			}
 			// only children path can keep retEL
-			if strings.Count(path, ".") < strings.Count(prevDocTypePath, ".") {
-				retEL = ""
+			if strings.Count(path, ".") < strings.Count(*pPrevDocTypePath, ".") {
+				*pRetEL = ""
 			}
 		} else {
-			retEL = ""
+			*pRetEL = ""
 		}
 
-		return true, sTrim(sJoin([]string{retSL, retEL}, ","), ",")
+		return true, sTrim(sJoin([]string{retSL, *pRetEL}, ","), ",")
 
 	case "code":
 
-		path := getPathWithCode()
+		path := fnPathWithCode()
 
 		retSN := fSf(`"asn_statementNotation": { "language": "%s", "literal": "%s" }`, "en-au", value)
 
@@ -201,42 +199,33 @@ func proc(
 		items := sSplit(value, "|")
 		// fmt.Println(items)
 
-		fieldname := ""
+		code := ""
+		nodeType := ""
 		outArrs := []string{}
 		for _, item := range items {
 			id := item[sLastIndex(item, "/")+1:]
-			code := jt.GetStrVal(mNodeData[id+"."+"code"])
+			code = jt.GetStrVal(mNodeData[id+"."+"code"])
 			title := jt.GetStrVal(mNodeData[id+"."+"title"])
-			nodeType := tool.GetCodeAncestor(mCodeParent, code, 0)
-			switch nodeType {
-			case "GC":
-				outArrs = append(outArrs, fSf(`{ "asn_skillEmbodied": { "uri": "%s", "prefLabel": "%s"} }`, item, title))
-			case "LA":
-				outArrs = append(outArrs, fSf(`{ "dc_relation": { "uri": "%s", "prefLabel": "%s"} }`, item, title))
-			case "AS":
-				outArrs = append(outArrs, fSf(`{ "asn_hasLevel": { "uri": "%s", "prefLabel": "%s"} }`, item, title))
-			case "CCP":
-				outArrs = append(outArrs, fSf(`{ "asn_crossSubjectReference": { "uri": "%s", "prefLabel": "%s"} }`, item, title))
-			default:
-				log.Fatalf("'%v' is not one of [GC CCP LA AS], code is '%v'", nodeType, code)
-			}
-		}
-
-		switch name {
-		case "connections.Levels":
-			fieldname = "Level"
-		case "connections.OI":
-			fieldname = "Organising Ideas"
-		case "connections.ASC":
-			fieldname = "Achievement Standard Components"
-		case "connections.IG":
-			fieldname = "Indicator Groups"
-		case "connections.CD":
-			fieldname = "Content Descriptions"
+			nodeType = tool.GetCodeAncestor(mCodeParent, code, 0)
+			outArrs = append(outArrs, fSf(`{ "uri": "%s", "prefLabel": "%s" }`, item, title))
 		}
 
 		outArrStr := sJoin(outArrs, ",")
-		ret := fSf(`"%s": [%s]`, fieldname, outArrStr)
+		ret := ""
+
+		switch nodeType {
+		case "GC":
+			ret = fSf(`"%s": [%s]`, "asn_skillEmbodied", outArrStr)
+		case "LA":
+			ret = fSf(`"%s": [%s]`, "dc_relation", outArrStr)
+		case "AS":
+			ret = fSf(`"%s": [%s]`, "asn_hasLevel", outArrStr)
+		case "CCP":
+			ret = fSf(`"%s": [%s]`, "asn_crossSubjectReference", outArrStr)
+		default:
+			log.Fatalf("'%v' is not one of [GC CCP LA AS], code is '%v'", nodeType, code)
+		}
+
 		return true, ret
 
 	default:
@@ -244,7 +233,17 @@ func proc(
 	}
 }
 
-func treeProc3(data []byte, la string, mCodeParent map[string]string, mNodeData map[string]interface{}) string {
+func treeProc3(
+	data []byte,
+	la string,
+	mCodeParent map[string]string,
+	mNodeData map[string]interface{},
+	paths []string,
+	// static for filling
+	pPrevDocTypePath *string,
+	pRetEL *string,
+
+) string {
 
 	var (
 		uri4id = "http://rdf.curriculum.edu.au/202110"
@@ -261,8 +260,8 @@ func treeProc3(data []byte, la string, mCodeParent map[string]string, mNodeData 
 	re4json, mRE4Each := reMerged()
 	// fmt.Println(re4json, len(mRE4Each))
 
-	getPathWithTypeName := fn4GetPathByProp(js, "typeName")
-	getPathWithCode := fn4GetPathByProp(js, "code")
+	getPathWithTypeName := fnGetPathByProp("typeName", paths, "")
+	getPathWithCode := fnGetPathByProp("code", paths, "")
 
 	js = re4json.ReplaceAllStringFunc(js, func(s string) string {
 
@@ -291,6 +290,8 @@ func treeProc3(data []byte, la string, mCodeParent map[string]string, mNodeData 
 					mNodeData,
 					getPathWithTypeName,
 					getPathWithCode,
+					pPrevDocTypePath,
+					pRetEL,
 				); ok {
 					if hasComma && repl != "" {
 						return repl + ","

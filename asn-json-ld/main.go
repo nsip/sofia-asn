@@ -186,14 +186,14 @@ func main() {
 		"la-Science.json":                                "Science",
 		"la-Technologies.json":                           "Technologies",
 		"la-The Arts.json":                               "The Arts",
-		"ccp-Cross-curriculum Priorities.json":           "",
-		"gc-Critical and Creative Thinking.json":         "",
-		"gc-Digital Literacy.json":                       "",
-		"gc-Ethical Understanding.json":                  "",
-		"gc-Intercultural Understanding.json":            "",
-		"gc-National Literacy Learning Progression.json": "",
-		"gc-National Numeracy Learning Progression.json": "",
-		"gc-Personal and Social Capability.json":         "",
+		"ccp-Cross-curriculum Priorities.json":           "CCP",
+		"gc-Critical and Creative Thinking.json":         "GC-CCT",
+		"gc-Digital Literacy.json":                       "GC-DL",
+		"gc-Ethical Understanding.json":                  "GC-EU",
+		"gc-Intercultural Understanding.json":            "GC-IU",
+		"gc-National Literacy Learning Progression.json": "GC-NLLP",
+		"gc-National Numeracy Learning Progression.json": "GC-NNLP",
+		"gc-Personal and Social Capability.json":         "GC-PSC",
 	}
 
 	os.MkdirAll("./out", os.ModePerm)
@@ -201,13 +201,13 @@ func main() {
 	wg := sync.WaitGroup{}
 	wg.Add(len(mInputLa))
 
-	for file, la := range mInputLa {
-		go func(file, la string) {
+	for file := range mInputLa {
+		go func(file string) {
 
 			cvt2jsonld(filepath.Join("../asn-json/out/", file))
 			wg.Done()
 
-		}(file, la)
+		}(file)
 	}
 	wg.Wait()
 

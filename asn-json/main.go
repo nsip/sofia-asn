@@ -3,11 +3,13 @@ package main
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/digisan/gotk"
+	"github.com/digisan/gotk/filedir"
 	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 )
@@ -34,36 +36,36 @@ func restoreEsc(js string) string {
 func main() {
 	defer gotk.TrackTime(time.Now())
 
-	// {
-	// 	outdir := "./out/"
-	// 	outfile := "asn-node.json"
-	// 	os.MkdirAll(outdir, os.ModePerm)
-	// 	outpath := filepath.Join(outdir, outfile)
+	{
+		outdir := "./out/"
+		outfile := "asn-node.json"
+		os.MkdirAll(outdir, os.ModePerm)
+		outpath := filepath.Join(outdir, outfile)
 
-	// 	if !filedir.FileExists(outpath) {
-	// 		data, err := os.ReadFile("../partition/out/node-meta.json")
-	// 		if err != nil {
-	// 			panic(err)
-	// 		}
-	// 		nodeProc(data, outdir, outfile, "../data/tree.pretty.json", "http://rdf.curriculum.edu.au/202110/")
-	// 	}
+		if !filedir.FileExists(outpath) {
+			data, err := os.ReadFile("../partition/out/node-meta.json")
+			if err != nil {
+				panic(err)
+			}
+			nodeProc(data, outdir, outfile, "../data/tree.pretty.json", "http://rdf.curriculum.edu.au/202110/")
+		}
 
-	// 	// 	/////
+		// 	/////
 
-	// 	data, err := os.ReadFile(outpath)
-	// 	if err != nil {
-	// 		log.Fatalln(err)
-	// 	}
+		data, err := os.ReadFile(outpath)
+		if err != nil {
+			log.Fatalln(err)
+		}
 
-	// 	mIdBlock, _ := getIdBlock(string(data))
+		mIdBlock, _ := getIdBlock(string(data))
 
-	// 	inpath4exp := outpath
-	// 	outexp := childrenRepl(inpath4exp, mIdBlock)
-	// 	// os.WriteFile("./out/asnexp.json", []byte(outexp), os.ModePerm)
+		inpath4exp := outpath
+		outexp := childrenRepl(inpath4exp, mIdBlock)
+		// os.WriteFile("./out/asnexp.json", []byte(outexp), os.ModePerm)
 
-	// 	rootWholeBlock := getRootWholeObject(outexp)
-	// 	os.WriteFile("./out/asn-node-one.json", []byte(rootWholeBlock), os.ModePerm)
-	// }
+		rootWholeBlock := getRootWholeObject(outexp)
+		os.WriteFile("./out/asn-node-one.json", []byte(rootWholeBlock), os.ModePerm)
+	}
 
 	//////////////////////////////////////////////////////////////////////
 
@@ -110,21 +112,37 @@ func main() {
 		wg.Add(len(mInputLa))
 
 		for file, la := range mInputLa {
+
 			go func(file, la string) {
+
+				var (
+					prevDocTypePath = ""
+					retEL           = `` // used by 'Level' & its descendants
+				)
 
 				data, err := os.ReadFile(`../partition/out/` + file)
 				if err != nil {
 					log.Fatalln(err)
 				}
-
 				js := removeEsc(string(data))
 
-				// out := treeProc2([]byte(js), "http://rdf.curriculum.edu.au/202110", la, mUidTitle, mCodeParent, mNodeData)
-				out := treeProc3([]byte(js), la, mCodeParent, mNodeData)
+				paths, _ := jt.GetAllLeafPaths(js)
 
-				out = restoreEsc(out)
+				// js = treeProc2([]byte(js), "http://rdf.curriculum.edu.au/202110", la, mUidTitle, mCodeParent, mNodeData)
+				js = treeProc3(
+					[]byte(js),
+					la,
+					mCodeParent,
+					mNodeData,
+					paths,
+					&prevDocTypePath,
+					&retEL,
+				)
 
-				os.WriteFile("./out/"+file, []byte(out), os.ModePerm)
+				js = restoreEsc(js)
+
+				os.WriteFile("./out/"+file, []byte(js), os.ModePerm)
+
 				wg.Done()
 
 			}(file, la)

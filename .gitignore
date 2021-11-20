@@ -14,14 +14,14 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-partition/out/
+partition/out*/
 partition/*.exe
 partition/partition
 
-asn-json/out/
+asn-json/out*/
 asn-json/*.exe
 asn-json/asn-json
 
-asn-json-ld/out/
+asn-json-ld/out*/
 asn-json-ld/*.exe
 asn-json-ld/asn-json
