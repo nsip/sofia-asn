@@ -126,7 +126,7 @@ func main() {
 				}
 				js := removeEsc(string(data))
 
-				paths, _ := jt.GetAllLeafPaths(js)
+				paths, _ := jt.GetLeavesPathOrderly(js)
 
 				// js = treeProc2([]byte(js), "http://rdf.curriculum.edu.au/202110", la, mUidTitle, mCodeParent, mNodeData)
 				js = treeProc3(

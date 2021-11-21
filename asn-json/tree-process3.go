@@ -38,22 +38,6 @@ var (
 		"connections.CD":     `"Content Descriptions":\s*\[[^\[\]]+\],?`,
 	}
 
-	mRE4Path = map[string]*regexp.Regexp{
-		// "text":               regexp.MustCompile(`\.?text$`),
-		"uuid":               regexp.MustCompile(`\.?uuid$`),
-		"type":               regexp.MustCompile(`\.?type$`),
-		"created_at":         regexp.MustCompile(`\.?created_at$`),
-		"title":              regexp.MustCompile(`\.?title$`),
-		"doc.typeName":       regexp.MustCompile(`\.?doc\.typeName$`),
-		"code":               regexp.MustCompile(`\.?code$`),
-		"tag":                regexp.MustCompile(`\.?tags\.`),
-		"connections.Levels": regexp.MustCompile(`\.?connections\.Levels\.\d+$`),
-		"connections.OI":     regexp.MustCompile(`\.?connections\.Organising Ideas\.\d+$`),
-		"connections.ASC":    regexp.MustCompile(`\.?connections\.Achievement Standard Components\.\d+$`),
-		"connections.IG":     regexp.MustCompile(`\.?connections\.Indicator Groups\.\d+$`),
-		"connections.CD":     regexp.MustCompile(`\.?connections\.Content Descriptions\.\d+$`),
-	}
-
 	reMerged = func() (*regexp.Regexp, map[string]*regexp.Regexp) {
 		mRE4Each := map[string]*regexp.Regexp{}
 		restr := ""
@@ -302,6 +286,12 @@ func treeProc3(
 		}
 		return s
 	})
+
+	// *** further process ***
+
+	// remove "connections" wrapper
+	_, _, mPropLocs, mPropValues := jt.GetProperties(js)
+	js = jt.RemoveParent(js, "connections", mPropLocs, mPropValues)
 
 	return js
 }

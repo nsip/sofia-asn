@@ -3,8 +3,8 @@ module github.com/nsip/sofia-asn
 go 1.17
 
 require (
-	github.com/digisan/gotk v0.0.40
-	github.com/digisan/json-tool v0.0.27
+	github.com/digisan/gotk v0.0.41
+	github.com/digisan/json-tool v0.0.28
 	github.com/tidwall/gjson v1.11.0
 	github.com/tidwall/sjson v1.2.3
 )
