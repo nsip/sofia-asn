@@ -21,7 +21,9 @@ partition/partition
 asn-json/out*/
 asn-json/*.exe
 asn-json/asn-json
+asn-json/*.gz
 
 asn-json-ld/out*/
 asn-json-ld/*.exe
 asn-json-ld/asn-json
+asn-json-ld/*.gz

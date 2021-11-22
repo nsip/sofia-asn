@@ -28,6 +28,7 @@ var (
 		"type":               `"type":\s*"\w+",?`,
 		"created_at":         `"created_at":\s*"[^"]+",?`,
 		"title":              `"title":\s*"[^"]+",?`,
+		"position":           `"position":\s*"[^"]+",?`,
 		"doc.typeName":       `"doc":\s*\{[^{}]+\},?`,
 		"code":               `"code":\s*"[^"]+",?`,
 		"tag":                `"tags":\s*\{[^{}]+\},?`,
@@ -60,6 +61,16 @@ func fnGetPathByProp(prop string, paths []string, info string) func() string {
 	}
 }
 
+func kvstrJoin(kvStrGrp ...string) string {
+	nonEmptyStrGrp := []string{}
+	for _, kvstr := range kvStrGrp {
+		if sTrim(kvstr, " \t\n") != "" {
+			nonEmptyStrGrp = append(nonEmptyStrGrp, kvstr)
+		}
+	}
+	return sJoin(nonEmptyStrGrp, ",")
+}
+
 func proc(
 
 	js, s, name, value string,
@@ -82,7 +93,7 @@ func proc(
 
 	switch name {
 	case "uuid":
-		return true, fSf(`"Id": "%s/%s"`, uri4id, value)
+		return true, fSf(`"id": "%s/%s"`, uri4id, value)
 
 	case "type":
 		return true, ""
@@ -93,12 +104,25 @@ func proc(
 	case "title":
 		return true, fSf(`"dcterms_title": { "language": "%s", "literal": "%s" }`, "en-au", value)
 
+	case "position":
+		return true, fSf(`"asn_listID": "%s"`, value)
+
 	case "doc.typeName":
 
 		path := fnPathWithDocType()
 
 		// "asn_statementLabel"
 		retSL := fSf(`"asn_statementLabel": { "language": "%s", "literal": "%s" }`, "en-au", value)
+
+		// “asn_proficiencyLevel”
+		retPL := ""
+		if ts.In(la, "GC-DL", "GC-NLLP") {
+			if value == "Level" {
+				lvl := getProLevel(mData, path)
+				uri := mProglvlUri[lvl]
+				retPL = fSf(`"asn_proficiencyLevel": { "uri": "%s", "prefLabel": "%s" }`, uri, lvl)
+			}
+		}
 
 		// "dcterms_educationLevel"
 		if ts.NotIn(la, "CCP", "GC-NLLP", "GC-NNLP") {
@@ -121,7 +145,7 @@ func proc(
 			*pRetEL = ""
 		}
 
-		return true, sTrim(sJoin([]string{retSL, *pRetEL}, ","), ",")
+		return true, kvstrJoin(retSL, retPL, *pRetEL)
 
 	case "code":
 

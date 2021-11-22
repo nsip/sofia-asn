@@ -10,6 +10,23 @@ import (
 	"github.com/nsip/sofia-asn/tool"
 )
 
+func getProLevel(mData map[string]interface{}, path string) string {
+AGAIN:
+	sp := jt.NewSibling(path, "doc.typeName")
+	if mData[sp] == "Level" {
+		lvlstr := mData[jt.NewSibling(path, "title")].(string)
+		tail := ""
+		fmt.Sscanf(lvlstr, "Level %s", &tail)
+		return tail
+	} else {
+		path = jt.ParentPath(path)
+		if path == "" {
+			return ""
+		}
+		goto AGAIN
+	}
+}
+
 func getYears(mData map[string]interface{}, path string) []string {
 AGAIN:
 	sp := jt.NewSibling(path, "doc.typeName")
@@ -41,7 +58,7 @@ func treeProc2(data []byte, uri4id, la string, mUidTitle, mCodeParent map[string
 	}
 
 	jt.RegisterRule(`\.?uuid$`, func(path string, value interface{}) (ok bool, ps []string, vs []interface{}) {
-		return true, []string{sibling(path, "Id")}, []interface{}{fSf("%s/%v", uri4id, value)}
+		return true, []string{sibling(path, "id")}, []interface{}{fSf("%s/%v", uri4id, value)}
 	})
 
 	jt.RegisterRule(`\.?type$`, func(path string, value interface{}) (ok bool, ps []string, vs []interface{}) {

@@ -16,7 +16,7 @@ import (
 )
 
 type asnjson struct {
-	Id string `json:"Id"` // DIRECT
+	Id string `json:"id"` // DIRECT
 
 	///////////////
 
@@ -331,7 +331,7 @@ func getIdBlock(js string) (mIdBlock, mIdBlockLeaf map[string]string) {
 		if r.Err != nil {
 			log.Fatalln(r.Err)
 		}
-		id := gjson.Get(r.Obj, "Id").String()
+		id := gjson.Get(r.Obj, "id").String()
 		mIdBlock[id] = r.Obj
 
 		hasChildren := gjson.Get(r.Obj, "children").IsArray()
@@ -387,7 +387,7 @@ AGAIN:
 
 func getRootWholeObject(allNestedSet string) string {
 
-	rId := regexp.MustCompile(`"Id": "http[^"]+"`)
+	rId := regexp.MustCompile(`"id": "http[^"]+"`)
 
 	mIdCnt := make(map[string]int)
 	rId.ReplaceAllStringFunc(allNestedSet, func(s string) string {

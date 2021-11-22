@@ -36,10 +36,10 @@ func treeProc(data []byte, uri4id, la string, mCodeParent, mUidTitle map[string]
 	)
 
 	//////
-	// Id
+	// id
 	rId := regexp.MustCompile(`"uuid":\s*"[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}"`)
 	js = rId.ReplaceAllStringFunc(js, func(s string) string {
-		return fSf(`"Id": "%s/%s"`, uri4id, fetchValue(s))
+		return fSf(`"id": "%s/%s"`, uri4id, fetchValue(s))
 	})
 
 	// type => removed
@@ -84,7 +84,7 @@ func treeProc(data []byte, uri4id, la string, mCodeParent, mUidTitle map[string]
 	//////
 	// dcterms_subject
 	if subUri, okSubUri := mLaUri[la]; okSubUri {
-		rId4uri := regexp.MustCompile(`"Id":\s*"http[^"]+",?\n`)
+		rId4uri := regexp.MustCompile(`"id":\s*"http[^"]+",?\n`)
 		js = rId4uri.ReplaceAllStringFunc(js, func(s string) string {
 			sfx0, sfx1 := setWhenEquals(s[len(s)-1], '\n'), setWhenEquals(s[len(s)-2], ',')
 			suffix := fSf(`"dcterms_subject": { "prefLabel": "%s", "uri": "%s" }%s%s`, la, subUri, sfx1, sfx0)
@@ -110,7 +110,7 @@ func treeProc(data []byte, uri4id, la string, mCodeParent, mUidTitle map[string]
 	}
 
 	// "children"? => add "cls": "folder"; else add "leaf": "true"
-	allPaths := jt.GetFieldPaths("Id", mLvlSiblings)
+	allPaths := jt.GetFieldPaths("id", mLvlSiblings)
 	allPaths = ts.FM(allPaths, nil, func(i int, e string) string {
 		return jt.ParentPath(e)
 	})
@@ -143,8 +143,8 @@ func treeProc(data []byte, uri4id, la string, mCodeParent, mUidTitle map[string]
 		js, _ = sjson.Delete(js, tp)
 	}
 
-	// append some after "Id"
-	rNewId := regexp.MustCompile(`"Id":\s*"http[^"]+",?`)
+	// append some after "id"
+	rNewId := regexp.MustCompile(`"id":\s*"http[^"]+",?`)
 	// asn_authorityStatus
 	js = rNewId.ReplaceAllStringFunc(js, func(s string) string {
 		sfx := setWhenEquals(s[len(s)-1], ',')

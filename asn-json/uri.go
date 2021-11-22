@@ -29,4 +29,21 @@ var (
 		"Year 11":         `http://vocabulary.curriculum.edu.au/schoolLevel/11`,
 		"Year 12":         `http://vocabulary.curriculum.edu.au/schoolLevel/12`,
 	}
+
+	mProglvlUri = map[string]string{
+		"1a": `http://vocabulary.curriculum.edu.au/progressionLevel/-2`,
+		"1b": `http://vocabulary.curriculum.edu.au/progressionLevel/-1`,
+		"1":  `http://vocabulary.curriculum.edu.au/progressionLevel/1`,
+		"2":  `http://vocabulary.curriculum.edu.au/progressionLevel/2`,
+		"3":  `http://vocabulary.curriculum.edu.au/progressionLevel/3`,
+		"4":  `http://vocabulary.curriculum.edu.au/progressionLevel/4`,
+		"5":  `http://vocabulary.curriculum.edu.au/progressionLevel/5`,
+		"6":  `http://vocabulary.curriculum.edu.au/progressionLevel/6`,
+		"7":  `http://vocabulary.curriculum.edu.au/progressionLevel/7`,
+		"8":  `http://vocabulary.curriculum.edu.au/progressionLevel/8`,
+		"9":  `http://vocabulary.curriculum.edu.au/progressionLevel/9`,
+		"10": `http://vocabulary.curriculum.edu.au/progressionLevel/10`,
+		"11": `http://vocabulary.curriculum.edu.au/progressionLevel/11`,
+		"12": `http://vocabulary.curriculum.edu.au/progressionLevel/12`,
+	}
 )

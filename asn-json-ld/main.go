@@ -35,9 +35,9 @@ func findIdLinkage(js string, mFamilyTree map[string][]string) (mIdLink2P, mIdLi
 	mIdLink2P = make(map[string][]string)
 	for _, children := range mFamilyTree {
 		for _, child := range children {
-			if strings.HasSuffix(child, ".Id") {
+			if strings.HasSuffix(child, ".id") {
 				id := gjson.Get(js, child).String()
-				pid := gjson.Get(js, jt.NewUncle(child, "Id")).String()
+				pid := gjson.Get(js, jt.NewUncle(child, "id")).String()
 				mIdLink2P[id] = append(mIdLink2P[id], pid)
 				mIdLink2C[pid] = append(mIdLink2C[pid], id)
 			}
@@ -96,7 +96,7 @@ func cvt2jsonld(asnpath string) {
 			ret = s
 		}
 
-		typestr := `"@type": "asn:Statement",`
+		typestr := `"@type": [ "asn:Statement", "skos:Concept" ],`
 		ret = typestr + ret
 
 		return
@@ -109,7 +109,7 @@ func cvt2jsonld(asnpath string) {
 			suffix = ","
 		}
 		str := tool.FetchValue(s, "|")
-		return fmt.Sprintf(`"dc:modified": { "@value": "%s", "@type": "xsd:dateTime" }%s`, str, suffix)
+		return fmt.Sprintf(`"dc:modified": { "@value": "%s", "@type": [ "xsd:dateTime", "skos:Concept" ] }%s`, str, suffix)
 	})
 
 	rLangLit := regexp.MustCompile(`\{[\s\n]*"language":\s*"[^"]+",?[\s\n]*"literal":\s*"[^"]+"[\s\n]*\},?`)
