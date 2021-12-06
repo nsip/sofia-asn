@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/digisan/gotk"
-	"github.com/digisan/gotk/slice/ti"
-	"github.com/digisan/gotk/slice/ts"
+	"github.com/digisan/gotk/generics/ti"
+	"github.com/digisan/gotk/generics/ts"
 	jt "github.com/digisan/json-tool"
 )
 

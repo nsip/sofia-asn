@@ -53,12 +53,12 @@ func cvt2jsonld(asnpath string) {
 		panic(err)
 	}
 	js := string(data)
-	fmt.Println(len(js))
+	// fmt.Println(len(js))
 
-	mLvlSiblings, mFamilyTree := jt.FamilyTree(js)
-	fmt.Println(len(mLvlSiblings))
-	mIdLink2P, mIdLink2C := findIdLinkage(js, mFamilyTree)
-	fmt.Println(len(mIdLink2P), len(mIdLink2C))
+	_, mFamilyTree := jt.FamilyTree(js)
+	// fmt.Println(len(mLvlSiblings))
+	mIdLink2P, _ := findIdLinkage(js, mFamilyTree)
+	// fmt.Println(len(mIdLink2P), len(mIdLink2C))
 
 	// fmt.Println(mIdLink2P["http://rdf.curriculum.edu.au/202110/649c9d14-75b7-41e3-ac5f-c4c86fd8f57c"])
 	// fmt.Println(mIdLink2C["http://rdf.curriculum.edu.au/202110/649c9d14-75b7-41e3-ac5f-c4c86fd8f57c"])

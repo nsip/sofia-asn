@@ -1,5 +1,11 @@
 package main
 
+import (
+	"fmt"
+
+	jt "github.com/digisan/json-tool"
+)
+
 var (
 	mLaUri = map[string]string{
 		"English":                        `http://vocabulary.curriculum.edu.au/framework/E`,
@@ -31,8 +37,6 @@ var (
 	}
 
 	mProglvlUri = map[string]string{
-		"1a": `http://vocabulary.curriculum.edu.au/progressionLevel/-2`,
-		"1b": `http://vocabulary.curriculum.edu.au/progressionLevel/-1`,
 		"1":  `http://vocabulary.curriculum.edu.au/progressionLevel/1`,
 		"2":  `http://vocabulary.curriculum.edu.au/progressionLevel/2`,
 		"3":  `http://vocabulary.curriculum.edu.au/progressionLevel/3`,
@@ -45,5 +49,53 @@ var (
 		"10": `http://vocabulary.curriculum.edu.au/progressionLevel/10`,
 		"11": `http://vocabulary.curriculum.edu.au/progressionLevel/11`,
 		"12": `http://vocabulary.curriculum.edu.au/progressionLevel/12`,
+		"13": `http://vocabulary.curriculum.edu.au/progressionLevel/13`,
+		"14": `http://vocabulary.curriculum.edu.au/progressionLevel/14`,
+	}
+
+	mProglvlABCUri = map[string]string{
+		"1a": `http://vocabulary.curriculum.edu.au/progressionLevel/-3`,
+		"1b": `http://vocabulary.curriculum.edu.au/progressionLevel/-2`,
+		"1c": `http://vocabulary.curriculum.edu.au/progressionLevel/-1`,
+	}
+
+	mProglvlABUri = map[string]string{
+		"1a": `http://vocabulary.curriculum.edu.au/progressionLevel/-2`,
+		"1b": `http://vocabulary.curriculum.edu.au/progressionLevel/-1`,
+	}
+
+	mProglvlAUri = map[string]string{
+		"1a": `http://vocabulary.curriculum.edu.au/progressionLevel/-1`,
 	}
 )
+
+func getProLevel(mData map[string]interface{}, path string) string {
+AGAIN:
+	sp := jt.NewSibling(path, "doc.typeName")
+	if mData[sp] == "Level" {
+		lvlstr := mData[jt.NewSibling(path, "title")].(string)
+		tail := ""
+		fmt.Sscanf(lvlstr, "Level %s", &tail)
+		return tail
+	} else {
+		path = jt.ParentPath(path)
+		if path == "" {
+			return ""
+		}
+		goto AGAIN
+	}
+}
+
+func getYears(mData map[string]interface{}, path string) []string {
+AGAIN:
+	sp := jt.NewSibling(path, "doc.typeName")
+	if mData[sp] == "Level" {
+		return yearsSplit(mData[jt.NewSibling(path, "title")].(string))
+	} else {
+		path = jt.ParentPath(path)
+		if path == "" {
+			return nil
+		}
+		goto AGAIN
+	}
+}

@@ -118,6 +118,8 @@ func main() {
 				var (
 					prevDocTypePath = ""
 					retEL           = `` // used by 'Level' & its descendants
+					retPL           = `` // used by 'Level' & its descendants
+					progLvlABC      = "" // indicate Level 1a, 1b or 1c
 				)
 
 				data, err := os.ReadFile(`../partition/out/` + file)
@@ -125,6 +127,17 @@ func main() {
 					log.Fatalln(err)
 				}
 				js := removeEsc(string(data))
+
+				///
+				switch {
+				case strings.Contains(js, `"Level 1c"`):
+					progLvlABC = "1c"
+				case strings.Contains(js, `"Level 1b"`):
+					progLvlABC = "1b"
+				case strings.Contains(js, `"Level 1a"`):
+					progLvlABC = "1a"
+				}
+				///
 
 				paths, _ := jt.GetLeavesPathOrderly(js)
 
@@ -137,6 +150,8 @@ func main() {
 					paths,
 					&prevDocTypePath,
 					&retEL,
+					&retPL,
+					progLvlABC,
 				)
 
 				js = restoreEsc(js)

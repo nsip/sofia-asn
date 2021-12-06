@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/digisan/gotk/slice/ts"
+	"github.com/digisan/gotk/generics/ts"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )

@@ -16,6 +16,8 @@ func TestMain(t *testing.T) {
 
 func TestRestructure(t *testing.T) {
 
+	os.MkdirAll("./out", os.ModePerm)
+
 	fs, _, err := filedir.WalkFileDir("./out/", false)
 	if err != nil {
 		log.Fatalln(err)

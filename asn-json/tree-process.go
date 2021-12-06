@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/digisan/gotk/slice/ts"
+	"github.com/digisan/gotk/generics/ts"
 	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 	"github.com/tidwall/gjson"

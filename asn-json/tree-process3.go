@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/digisan/gotk/slice/ts"
+	"github.com/digisan/gotk/generics/ts"
 	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 	"github.com/tidwall/gjson"
@@ -17,13 +17,14 @@ var (
 	sJoin      = strings.Join
 	sTrim      = strings.Trim
 	sLastIndex = strings.LastIndex
+	sHasPrefix = strings.HasPrefix
 	sHasSuffix = strings.HasSuffix
 	sSplit     = strings.Split
 )
 
 var (
 	mRES = map[string]string{
-		// "text":               `"text":\s*"[^"]+",?`,
+		"text":               `"text":\s*"[^"]+",?`,
 		"uuid":               `"uuid":\s*"[\d\w]{8}-[\d\w]{4}-[\d\w]{4}-[\d\w]{4}-[\d\w]{12}",?`,
 		"type":               `"type":\s*"\w+",?`,
 		"created_at":         `"created_at":\s*"[^"]+",?`,
@@ -79,11 +80,15 @@ func proc(
 	la, uri4id string,
 	mCodeParent map[string]string,
 	mNodeData map[string]interface{},
+	fnPathWithTitle func() string,
 	fnPathWithDocType func() string,
 	fnPathWithCode func() string,
 	// static for filling
 	pPrevDocTypePath *string,
 	pRetEL *string,
+	pRetPL *string,
+	// mProglvlUri Extra with 1a, 1b, 1c
+	mPLUri map[string][]string,
 
 ) (bool, string) {
 
@@ -102,7 +107,16 @@ func proc(
 		return true, fSf(`"dcterms_modified": { "literal": "%s" }`, value)
 
 	case "title":
-		return true, fSf(`"dcterms_title": { "language": "%s", "literal": "%s" }`, "en-au", value)
+		path := fnPathWithTitle()
+		// with 'text' sibling
+		if gjson.Get(js, jt.NewSibling(path, "text")).Exists() {
+			return true, fSf(`"dcterms_title": { "language": "en-au", "literal": "%s" }`, value)
+		}
+		// no 'text' sibling
+		return true, fSf(`"dcterms_title": { "language": "en-au", "literal": "%s" }, "text": "%s"`, value, value)
+
+	case "text":
+		return true, fSf(`"dcterms_description": { "language": "en-au", "literal": "%s" }, "text": "%s"`, value, value)
 
 	case "position":
 		return true, fSf(`"asn_listID": "%s"`, value)
@@ -115,13 +129,19 @@ func proc(
 		retSL := fSf(`"asn_statementLabel": { "language": "%s", "literal": "%s" }`, "en-au", value)
 
 		// “asn_proficiencyLevel”
-		retPL := ""
-		if ts.In(la, "GC-DL", "GC-NLLP") {
+		if sHasPrefix(la, "GC-") {
 			if value == "Level" {
 				lvl := getProLevel(mData, path)
-				uri := mProglvlUri[lvl]
-				retPL = fSf(`"asn_proficiencyLevel": { "uri": "%s", "prefLabel": "%s" }`, uri, lvl)
+				uri := mPLUri[lvl][0] // only one uri
+				*pRetPL = fSf(`"asn_proficiencyLevel": { "uri": "%s", "prefLabel": "%s" }`, uri, lvl)
+				*pPrevDocTypePath = path
 			}
+			// only children path can keep retEL
+			if strings.Count(path, ".") < strings.Count(*pPrevDocTypePath, ".") {
+				*pRetPL = ""
+			}
+		} else {
+			*pRetPL = ""
 		}
 
 		// "dcterms_educationLevel"
@@ -145,7 +165,7 @@ func proc(
 			*pRetEL = ""
 		}
 
-		return true, kvstrJoin(retSL, retPL, *pRetEL)
+		return true, kvstrJoin(retSL, *pRetPL, *pRetEL)
 
 	case "code":
 
@@ -157,10 +177,10 @@ func proc(
 
 		retIS := fSf(`"asn_indexingStatus": { "uri": "%s" }`, `http://purl.org/ASN/scheme/ASNIndexingStatus/No`)
 
-		retTxt := ""
-		if !gjson.Get(js, jt.NewSibling(path, "text")).Exists() {
-			retTxt = `"text": null`
-		}
+		// retTxt := ""
+		// if !gjson.Get(js, jt.NewSibling(path, "text")).Exists() {
+		// 	retTxt = `"text": null`
+		// }
 
 		retSub := ``
 		if ts.In(value, "ENG", "HAS", "HPE", "LAN", "MAT", "SCI", "TEC", "ART") {
@@ -185,15 +205,12 @@ func proc(
 		}
 
 		rets := []string{}
-		for _, r := range []string{retSN, retAS, retIS, retTxt, retSub, retRT, retRTH, retCLS, retLEAF} {
+		for _, r := range []string{retSN, retAS, retIS, retSub, retRT, retRTH, retCLS, retLEAF} {
 			if r != "" {
 				rets = append(rets, r)
 			}
 		}
 		return true, sJoin(rets, ",")
-
-	// case "text":
-	// 	return true, fSf(`"text": "%s"`, value)
 
 	case "tag":
 		return true, fSf(`"asn_conceptTerm": "%s"`, "SCIENCE_TEACHER_BACKGROUND_INFORMATION")
@@ -215,7 +232,12 @@ func proc(
 			code = jt.GetStrVal(mNodeData[id+"."+"code"])
 			title := jt.GetStrVal(mNodeData[id+"."+"title"])
 			nodeType = tool.GetCodeAncestor(mCodeParent, code, 0)
-			outArrs = append(outArrs, fSf(`{ "uri": "%s", "prefLabel": "%s" }`, item, title))
+			switch nodeType {
+			case "GC", "CCP":
+				outArrs = append(outArrs, fSf(`{ "uri": "%s", "prefLabel": "%s" }`, item, code))
+			default:
+				outArrs = append(outArrs, fSf(`{ "uri": "%s", "prefLabel": "%s" }`, item, title))
+			}
 		}
 
 		outArrStr := sJoin(outArrs, ",")
@@ -250,12 +272,27 @@ func treeProc3(
 	// static for filling
 	pPrevDocTypePath *string,
 	pRetEL *string,
+	pRetPL *string,
+	// indicator for mProglvlUri Extra 1a, 1b, 1c
+	progLvlABC string,
 
 ) string {
 
 	var (
 		uri4id = "http://rdf.curriculum.edu.au/202110"
 	)
+
+	mPLUri := make(map[string][]string)
+	switch progLvlABC {
+	case "1c":
+		mPLUri = ts.MapMerge(mProglvlUri, mProglvlABCUri)
+	case "1b":
+		mPLUri = ts.MapMerge(mProglvlUri, mProglvlABUri)
+	case "1a":
+		mPLUri = ts.MapMerge(mProglvlUri, mProglvlAUri)
+	default:
+		mPLUri = ts.MapMerge(mProglvlUri)
+	}
 
 	js := string(data)
 	mLvlSiblings, _ := jt.FamilyTree(js)
@@ -268,6 +305,7 @@ func treeProc3(
 	re4json, mRE4Each := reMerged()
 	// fmt.Println(re4json, len(mRE4Each))
 
+	getPathWithTitle := fnGetPathByProp("title", paths, "")
 	getPathWithTypeName := fnGetPathByProp("typeName", paths, "")
 	getPathWithCode := fnGetPathByProp("code", paths, "")
 
@@ -296,10 +334,13 @@ func treeProc3(
 					uri4id,
 					mCodeParent,
 					mNodeData,
+					getPathWithTitle,
 					getPathWithTypeName,
 					getPathWithCode,
 					pPrevDocTypePath,
 					pRetEL,
+					pRetPL,
+					mPLUri,
 				); ok {
 					if hasComma && repl != "" {
 						return repl + ","
