@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/digisan/gotk/generics/ts"
+	"github.com/digisan/go-generics/str"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
@@ -143,7 +143,7 @@ func gc(js string) map[string]string {
 								block2 := r2.String()
 								title2str := gjson.Get(block2, "title").String()
 
-								if ts.In(title2str, gcTitles...) {
+								if str.In(title2str, gcTitles...) {
 									fmt.Println("  ", title2str)
 
 									var m map[string]interface{}

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/digisan/go-generics/i64"
+	"github.com/digisan/go-generics/str"
 	"github.com/digisan/gotk"
-	"github.com/digisan/gotk/generics/ti"
-	"github.com/digisan/gotk/generics/ts"
 	jt "github.com/digisan/json-tool"
 )
 
@@ -34,7 +34,7 @@ func TestTreeProc3(t *testing.T) {
 			connSet = append(connSet, k)
 		}
 	}
-	connSet = ts.MkSet(connSet...)
+	connSet = str.MkSet(connSet...)
 	for _, conn := range connSet {
 		fmt.Println(conn)
 	}
@@ -60,7 +60,7 @@ func TestSort(t *testing.T) {
 				}
 			}
 		}
-		lmin := ti.Min(len(a1), len(a2))
+		lmin := i64.Min(len(a1), len(a2))
 		for i := 0; i < lmin; i++ {
 			n1, n2 := a1[i], a2[i]
 			switch {
@@ -80,7 +80,7 @@ func TestSort(t *testing.T) {
 		"c.2.y.2.r.9.q.1": "",
 	}
 
-	ks, vs := ts.Map2KVs(m, sortRule, nil)
+	ks, vs := str.Map2KVs(m, sortRule, nil)
 	fmt.Println(ks)
 	fmt.Println(vs)
 }
