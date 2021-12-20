@@ -60,9 +60,9 @@ func cvt2jsonld(asnpath string) {
 	mIdLink2P, _ := findIdLinkage(js, mFamilyTree)
 	// fmt.Println(len(mIdLink2P), len(mIdLink2C))
 
-	// fmt.Println(mIdLink2P["http://rdf.curriculum.edu.au/202110/649c9d14-75b7-41e3-ac5f-c4c86fd8f57c"])
-	// fmt.Println(mIdLink2C["http://rdf.curriculum.edu.au/202110/649c9d14-75b7-41e3-ac5f-c4c86fd8f57c"])
-	// fmt.Println(mIdLink2C["http://rdf.curriculum.edu.au/202110/652a716a-67c2-4174-9dbd-79977ba3f049"])
+	// fmt.Println(mIdLink2P[uri4id + "649c9d14-75b7-41e3-ac5f-c4c86fd8f57c"])
+	// fmt.Println(mIdLink2C[uri4id + "649c9d14-75b7-41e3-ac5f-c4c86fd8f57c"])
+	// fmt.Println(mIdLink2C[uri4id + "652a716a-67c2-4174-9dbd-79977ba3f049"])
 
 	for oldPref, newPref := range mPrefRepl {
 		js = strings.ReplaceAll(js, "\""+oldPref, "\""+newPref)
@@ -109,7 +109,8 @@ func cvt2jsonld(asnpath string) {
 			suffix = ","
 		}
 		str := tool.FetchValue(s, "|")
-		return fmt.Sprintf(`"dc:modified": { "@value": "%s", "@type": [ "xsd:dateTime", "skos:Concept" ] }%s`, str, suffix)
+		// return fmt.Sprintf(`"dc:modified": { "@value": "%s", "@type": [ "xsd:dateTime", "skos:Concept" ] }%s`, str, suffix)
+		return fmt.Sprintf(`"dc:modified": { "@value": "%s", "@type": "xsd:dateTime" }%s`, str, suffix)
 	})
 
 	rLangLit := regexp.MustCompile(`\{[\s\n]*"language":\s*"[^"]+",?[\s\n]*"literal":\s*"[^"]+"[\s\n]*\},?`)

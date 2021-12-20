@@ -55,7 +55,7 @@ func TestTreeProc(t *testing.T) {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		out := treeProc2(data, "http://rdf.curriculum.edu.au/202110", la, mUidTitle, mCodeParent, mNodeData)
+		out := treeProc2(data, uri4id, la, mUidTitle, mCodeParent, mNodeData)
 		os.WriteFile("./out/"+file, []byte(out), os.ModePerm)
 	}
 }

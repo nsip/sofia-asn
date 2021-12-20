@@ -8,6 +8,8 @@ import (
 
 var (
 	fSf = fmt.Sprintf
+
+	uri4id = "http://uat.vocabulary.curriculum.edu.au/" // "http://rdf.curriculum.edu.au/202110/"
 )
 
 func main() {
@@ -16,8 +18,6 @@ func main() {
 	os.MkdirAll(fSf("./%s/", outdir), os.ModePerm)
 
 	//////////////////////////////////////////////////////////////
-
-	uri4id := "http://rdf.curriculum.edu.au/202110/"
 
 	data, err := os.ReadFile("../data/node.pretty.json")
 	if err != nil {

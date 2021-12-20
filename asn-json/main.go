@@ -47,7 +47,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			nodeProc(data, outdir, outfile, "../data/tree.pretty.json", "http://rdf.curriculum.edu.au/202110/")
+			nodeProc(data, outdir, outfile, "../data/tree.pretty.json", uri4id)
 		}
 
 		// 	/////
@@ -141,7 +141,7 @@ func main() {
 
 				paths, _ := jt.GetLeavesPathOrderly(js)
 
-				// js = treeProc2([]byte(js), "http://rdf.curriculum.edu.au/202110", la, mUidTitle, mCodeParent, mNodeData)
+				// js = treeProc2([]byte(js), uri4id, la, mUidTitle, mCodeParent, mNodeData)
 				js = treeProc3(
 					[]byte(js),
 					la,

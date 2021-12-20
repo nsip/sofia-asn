@@ -278,10 +278,6 @@ func treeProc3(
 
 ) string {
 
-	var (
-		uri4id = "http://rdf.curriculum.edu.au/202110"
-	)
-
 	mPLUri := make(map[string][]string)
 	switch progLvlABC {
 	case "1c":

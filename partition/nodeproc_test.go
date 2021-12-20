@@ -29,5 +29,5 @@ func TestNodeProcess(t *testing.T) {
 	}
 	mMeta := parseMeta(string(dataMeta))
 
-	nodeProcess(data, "http://rdf.curriculum.edu.au/202110/", mMeta, "out")
+	nodeProcess(data, uri4id, mMeta, "out")
 }

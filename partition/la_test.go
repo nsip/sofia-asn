@@ -13,8 +13,8 @@ func TestConnFieldMapping(t *testing.T) {
 		panic(err)
 	}
 	mMeta := parseMeta(string(bytesMeta))
-	// nodeProcess(data, "http://rdf.curriculum.edu.au/202110/", mMeta, outdir)
+	// nodeProcess(data, uri4id, mMeta, outdir)
 
-	js := ConnFieldMapping(string(data), "http://rdf.curriculum.edu.au/202110/", mMeta)
+	js := ConnFieldMapping(string(data), uri4id, mMeta)
 	os.WriteFile("./temp.json", []byte(js), os.ModePerm)
 }
