@@ -1,10 +1,10 @@
 github.com/clbanning/mxj v1.8.4 h1:HuhwZtbyvyOw+3Z1AowPkU87JkJUSv751ELWaiTpj8I=
 github.com/clbanning/mxj v1.8.4/go.mod h1:BVjHeAH+rl9rs6f+QIpeRl0tfu10SXn1pUSa5PVGJng=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/digisan/go-generics v0.0.6 h1:MGgRx2qo8/w14cj55rJE+c3avM8IslvED82mnnmwAVc=
-github.com/digisan/go-generics v0.0.6/go.mod h1:LJQsUaXxp4nmNhl4Hm6Plk71L88LJCmzN0PrOu0xXjE=
-github.com/digisan/gotk v0.0.45 h1:oe6KTCmHVIS+kgoE9jFIm8h+dq+NGag93hw3vVfmBq0=
-github.com/digisan/gotk v0.0.45/go.mod h1:ZzfNRR+idHBsCXGIZet1rKYZeN85HOVtJ2MiMXL8sq0=
+github.com/digisan/go-generics v0.0.10 h1:LK8xJUHPg1fGIVPQBu52kTw3iqd7imZBeGXhwo5YLuM=
+github.com/digisan/go-generics v0.0.10/go.mod h1:LJQsUaXxp4nmNhl4Hm6Plk71L88LJCmzN0PrOu0xXjE=
+github.com/digisan/gotk v0.0.47 h1:LYlxv5jFiAr1IeelTStAexchJdIx2BYUZq6QwXRkWi4=
+github.com/digisan/gotk v0.0.47/go.mod h1:RaB8/sYjhtYjcoCRgO+XRwsIbExATH4FLW7DKwfYCVM=
 github.com/digisan/json-tool v0.0.33 h1:rNteXFd8r+T7ILYDzeHqZIS2ItXZMXEEKkE/uw7cT/s=
 github.com/digisan/json-tool v0.0.33/go.mod h1:XbRbwiX6bSYubwAUx7lktuYiqPZDWVj6AQhIrdPPsAU=
 github.com/digisan/logkit v0.0.4 h1:WS2/SWnZFTg8enKNRaaQuYRiOIM6gCNGxJkt/NrvEK0=
@@ -14,8 +14,9 @@ github.com/gookit/color v1.5.0/go.mod h1:43aQb+Zerm/BWh2GnrgOQm7ffz7tvQXEKV6BFMl
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/tidwall/gjson v1.12.1 h1:ikuZsLdhr8Ws0IdROXUS1Gi4v9Z4pGqpX/CvJkxvfpo=
 github.com/tidwall/gjson v1.12.1/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
+github.com/tidwall/gjson v1.13.0 h1:3TFY9yxOQShrvmjdM76K+jc66zJeT6D3/VFFYCGQf7M=
+github.com/tidwall/gjson v1.13.0/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
 github.com/tidwall/match v1.1.1 h1:+Ho715JplO36QYgwN9PGYNhgZvoUSc9X2c80KVTi+GA=
 github.com/tidwall/match v1.1.1/go.mod h1:eRSPERbgtNPcGhD8UCthc6PmLEQXEWd3PRB5JTxsfmM=
 github.com/tidwall/pretty v1.2.0 h1:RWIZEg2iJ8/g6fDDYzMpobmaoGh5OLl4AXtGUGPcqCs=
@@ -25,7 +26,7 @@ github.com/tidwall/sjson v1.2.4/go.mod h1:098SZ494YoMWPmMO6ct4dcFnqxwj9r/gF0Etp1
 github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 h1:QldyIu/L63oPpyvQmHgvgickp1Yw510KJOqX7H24mg8=
 github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778/go.mod h1:2MuV+tbUrU1zIOPMxZ5EncGwgmMJsa+9ucAQZXxsObs=
 golang.org/x/sys v0.0.0-20210330210617-4fbd30eecc44/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
-golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e h1:fLOSk5Q00efkSvAm+4xcoXD+RRmLmmulPn5I3Y9F2EM=
-golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27 h1:XDXtA5hveEEV8JB2l7nhMTp3t3cHp9ZpwcdjqyEWLlo=
+golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=

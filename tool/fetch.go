@@ -1,20 +1,15 @@
 package tool
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 )
 
 var (
-	fSf         = fmt.Sprintf
-	sIndex      = strings.Index
 	sJoin       = strings.Join
 	sTrim       = strings.Trim
 	sTrimSuffix = strings.TrimSuffix
 	sLastIndex  = strings.LastIndex
-	sHasSuffix  = strings.HasSuffix
-	sSplit      = strings.Split
 )
 
 var (

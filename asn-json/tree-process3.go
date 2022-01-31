@@ -40,6 +40,8 @@ var (
 		"connections.CD":     `"Content Descriptions":\s*\[[^\[\]]+\],?`,
 	}
 
+	mAsnCT = tool.GetAsnConceptTerm("../data/ACv9_ScOT_BC_20220118.txt", "../data/scot.jsonld")
+
 	reMerged = func() (*regexp.Regexp, map[string]*regexp.Regexp) {
 		mRE4Each := map[string]*regexp.Regexp{}
 		restr := ""
@@ -177,6 +179,11 @@ func proc(
 
 		retIS := fSf(`"asn_indexingStatus": { "uri": "%s" }`, `http://purl.org/ASN/scheme/ASNIndexingStatus/No`)
 
+		retCT := ""
+		if conceptTerm, ok := mAsnCT[value]; ok {
+			retCT = fSf(`"asn_conceptTerm": %s`, conceptTerm)
+		}
+
 		// retTxt := ""
 		// if !gjson.Get(js, jt.NewSibling(path, "text")).Exists() {
 		// 	retTxt = `"text": null`
@@ -205,7 +212,7 @@ func proc(
 		}
 
 		rets := []string{}
-		for _, r := range []string{retSN, retAS, retIS, retSub, retRT, retRTH, retCLS, retLEAF} {
+		for _, r := range []string{retSN, retAS, retCT, retIS, retSub, retRT, retRTH, retCLS, retLEAF} {
 			if r != "" {
 				rets = append(rets, r)
 			}

@@ -212,4 +212,5 @@ func main() {
 	}
 	wg.Wait()
 
+	fmt.Println("FORMAT each out file, then process extra duplicated line in 'main_test.go'")
 }
