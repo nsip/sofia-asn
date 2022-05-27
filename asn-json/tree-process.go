@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/digisan/go-generics/str"
+	. "github.com/digisan/go-generics/v2"
 	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 	"github.com/tidwall/gjson"
@@ -111,12 +111,12 @@ func treeProc(data []byte, uri4id, la string, mCodeParent, mUidTitle map[string]
 
 	// "children"? => add "cls": "folder"; else add "leaf": "true"
 	allPaths := jt.GetFieldPaths("id", mLvlSiblings)
-	allPaths = str.FM(allPaths, nil, func(i int, e string) string {
+	allPaths = Map4SglTyp(allPaths, func(i int, e string) string {
 		return jt.ParentPath(e)
 	})
 
 	cPaths := jt.GetFieldPaths("children", mLvlSiblings)
-	cPaths = str.FM(cPaths, nil, func(i int, e string) string {
+	cPaths = Map4SglTyp(cPaths, func(i int, e string) string {
 		return jt.ParentPath(e)
 	})
 
@@ -128,7 +128,7 @@ func treeProc(data []byte, uri4id, la string, mCodeParent, mUidTitle map[string]
 		}
 	}
 
-	for _, lp := range str.Minus(allPaths, cPaths) {
+	for _, lp := range Minus(allPaths, cPaths) {
 		if lp != "" {
 			js, _ = sjson.Set(js, lp+".leaf", "true")
 		} else {

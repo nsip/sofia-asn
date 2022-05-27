@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/digisan/go-generics/str"
+	. "github.com/digisan/go-generics/v2"
 	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 )
@@ -49,7 +49,7 @@ func treeProc2(data []byte, uri4id, la string, mUidTitle, mCodeParent map[string
 		ok = true
 		ps = []string{uncle(path, "asn_statementLabel.language"), uncle(path, "asn_statementLabel.literal")}
 		vs = []interface{}{"en-au", value}
-		if str.NotIn(jt.GetStrVal(value), "Learning Area", "Subject") {
+		if NotIn(jt.GetStrVal(value), "Learning Area", "Subject") {
 			for _, y := range getYears(mData, path) {
 				ps = append(ps, uncle(path, "dcterms_educationLevel.uri"), uncle(path, "dcterms_educationLevel.prefLabel"))
 				vs = append(vs, mYrlvlUri[y], y)
@@ -65,13 +65,13 @@ func treeProc2(data []byte, uri4id, la string, mUidTitle, mCodeParent map[string
 
 		// add for specific nodes
 		sval := jt.GetStrVal(value)
-		if str.In(sval, "ENG", "HAS", "HPE", "LAN", "MAT", "SCI", "TEC", "ART") {
+		if In(sval, "ENG", "HAS", "HPE", "LAN", "MAT", "SCI", "TEC", "ART") {
 			if subUri, okSubUri := mLaUri[la]; okSubUri {
 				ps = append(ps, sibling(path, "dcterms_subject.prefLabel"), sibling(path, "dcterms_subject.uri"))
 				vs = append(vs, la, subUri)
 			}
 		}
-		if str.In(sval, "root", "LA") {
+		if In(sval, "root", "LA") {
 			ps = append(ps, sibling(path, "dcterms_rights.language"), sibling(path, "dcterms_rights.literal"))
 			vs = append(vs, "en-au", `©Copyright Australian Curriculum, Assessment and Reporting Authority`)
 			ps = append(ps, sibling(path, "dcterms_rightsHolder.language"), sibling(path, "dcterms_rightsHolder.literal"))

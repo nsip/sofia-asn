@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/digisan/go-generics/str"
+	. "github.com/digisan/go-generics/v2"
 	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 	"github.com/tidwall/gjson"
@@ -147,7 +147,7 @@ func proc(
 		}
 
 		// "dcterms_educationLevel"
-		if str.NotIn(la, "CCP", "GC-NLLP", "GC-NNLP") {
+		if NotIn(la, "CCP", "GC-NLLP", "GC-NNLP") {
 			if value == "Level" { // see doc.typeName: 'Level', update global retEL
 				outArrs := []string{}
 				for _, y := range getYears(mData, path) {
@@ -190,7 +190,7 @@ func proc(
 		// }
 
 		retSub := ``
-		if str.In(value, "ENG", "HAS", "HPE", "LAN", "MAT", "SCI", "TEC", "ART") {
+		if In(value, "ENG", "HAS", "HPE", "LAN", "MAT", "SCI", "TEC", "ART") {
 			retS := []string{}
 			if subUri, okSubUri := mLaUri[la]; okSubUri {
 				retS = append(retS, fSf(`"dcterms_subject": { "prefLabel": "%s", "uri": "%s" }`, la, subUri))
@@ -199,7 +199,7 @@ func proc(
 		}
 
 		retRT, retRTH := ``, ``
-		if str.In(value, "root", "LA") {
+		if In(value, "root", "LA") {
 			retRT = fSf(`"dcterms_rights": { "language": "%s", "literal": "%s" }`, "en-au", `©Copyright Australian Curriculum, Assessment and Reporting Authority`)
 			retRTH = fSf(`"dcterms_rightsHolder": { "language": "%s", "literal": "%s" }`, "en-au", `Australian Curriculum, Assessment and Reporting Authority`)
 		}
@@ -288,13 +288,13 @@ func treeProc3(
 	mPLUri := make(map[string][]string)
 	switch progLvlABC {
 	case "1c":
-		mPLUri = str.MapMerge(mProglvlUri, mProglvlABCUri)
+		mPLUri = MapMerge(mProglvlUri, mProglvlABCUri)
 	case "1b":
-		mPLUri = str.MapMerge(mProglvlUri, mProglvlABUri)
+		mPLUri = MapMerge(mProglvlUri, mProglvlABUri)
 	case "1a":
-		mPLUri = str.MapMerge(mProglvlUri, mProglvlAUri)
+		mPLUri = MapMerge(mProglvlUri, mProglvlAUri)
 	default:
-		mPLUri = str.MapMerge(mProglvlUri)
+		mPLUri = MapMerge(mProglvlUri)
 	}
 
 	js := string(data)

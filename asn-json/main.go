@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/digisan/gotk"
+	"github.com/digisan/gotk/misc"
 	"github.com/digisan/gotk/filedir"
 	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
@@ -34,7 +34,7 @@ func restoreEsc(js string) string {
 }
 
 func main() {
-	defer gotk.TrackTime(time.Now())
+	defer misc.TrackTime(time.Now())
 
 	{
 		outdir := "./out/"

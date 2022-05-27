@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	strs "github.com/digisan/gotk/strings"
+	"github.com/digisan/gotk/strs"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )

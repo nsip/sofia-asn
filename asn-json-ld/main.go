@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	strs "github.com/digisan/gotk/strings"
+	"github.com/digisan/gotk/strs"
 	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 	"github.com/tidwall/gjson"
