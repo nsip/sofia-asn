@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
+
+	lk "github.com/digisan/logkit"
 )
 
 var (
-	fSf = fmt.Sprintf
-
+	fSf    = fmt.Sprintf
 	uri4id = "http://uat.vocabulary.curriculum.edu.au/" // "http://rdf.curriculum.edu.au/202110/"
 )
 
@@ -19,24 +19,18 @@ func main() {
 
 	//////////////////////////////////////////////////////////////
 
-	data, err := os.ReadFile("../data/node.pretty.json")
-	if err != nil {
-		panic(err)
-	}
-
-	bytesMeta, err := os.ReadFile("../data/metadata.pretty.json")
-	if err != nil {
-		panic(err)
-	}
+	bytesMeta, err := os.ReadFile("../data/Sofia-API-Meta-Data-09062022.json")
+	lk.FailOnErr("%v", err)
 	mMeta := parseMeta(string(bytesMeta))
-	nodeProcess(data, uri4id, mMeta, outdir)
+
+	bytesNodes, err := os.ReadFile("../data/Sofia-API-Nodes-Data-09062022.json")
+	lk.FailOnErr("%v", err)
+	nodeProcess(bytesNodes, uri4id, mMeta, outdir)
 
 	//////////////////////////////////////////////////////////////
 
-	data, err = os.ReadFile("../data/tree.pretty.json")
-	if err != nil {
-		panic(err)
-	}
+	data, err := os.ReadFile("../data/Sofia-API-Tree-Data-09062022.json") // tree.pretty.json
+	lk.FailOnErr("%v", err)
 	js := string(data)
 
 	fileContent := ccp(js, outdir)
@@ -62,90 +56,163 @@ func main() {
 	//////////////////////////////////////////////////////////////
 
 	func() {
-		file := "./out/la-English.json"
-		data, err := os.ReadFile(file)
+		in := "./out/la-English.json"
+		// out := "./out/la-English-out.json"
+		// if fd.FileExists(out) {
+		// 	return
+		// }
+		out := in
+
+		data, err := os.ReadFile(in)
+		lk.WarnOnErr("%v", err)
 		if err != nil {
-			log.Fatalln(err)
+			return
 		}
-		js := reStructEng(string(data))
+		js := reStruct(string(data))
 		js = ConnFieldMapping(js, uri4id, mMeta)
-		os.WriteFile(file, []byte(js), os.ModePerm)
+		if len(js) > 0 {
+			os.WriteFile(out, []byte(js), os.ModePerm)
+		}
 	}()
 
 	func() {
-		file := "./out/la-HASS.json"
-		data, err := os.ReadFile(file)
+		in := "./out/la-Humanities and Social Sciences.json" // Humanities and Social Sciences.json // HASS.json
+		// out := "./out/la-Humanities and Social Sciences-out.json"
+		// if fd.FileExists(out) {
+		// 	return
+		// }
+		out := in
+
+		data, err := os.ReadFile(in)
+		lk.WarnOnErr("%v", err)
 		if err != nil {
-			log.Fatalln(err)
+			return
 		}
-		js := reStructHASS(string(data))
+		js := reStruct(string(data))
 		js = ConnFieldMapping(js, uri4id, mMeta)
-		os.WriteFile(file, []byte(js), os.ModePerm)
+		if len(js) > 0 {
+			os.WriteFile(out, []byte(js), os.ModePerm)
+		}
 	}()
 
 	func() {
-		file := "./out/la-HPE.json"
-		data, err := os.ReadFile(file)
+		in := "./out/la-Health and Physical Education.json" // Health and Physical Education.json // HPE.json
+		// out := "./out/la-Health and Physical Education-out.json"
+		// if fd.FileExists(out) {
+		// 	return
+		// }
+		out := in
+
+		data, err := os.ReadFile(in)
+		lk.WarnOnErr("%v", err)
 		if err != nil {
-			log.Fatalln(err)
+			return
 		}
-		js := reStructHPE(string(data))
+		js := reStruct(string(data))
 		js = ConnFieldMapping(js, uri4id, mMeta)
-		os.WriteFile(file, []byte(js), os.ModePerm)
+		if len(js) > 0 {
+			os.WriteFile(out, []byte(js), os.ModePerm)
+		}
 	}()
 
 	func() {
-		file := "./out/la-Languages.json"
-		data, err := os.ReadFile(file)
+		in := "./out/la-Languages.json"
+		// out := "./out/la-Languages-out.json"
+		// if fd.FileExists(out) {
+		// 	return
+		// }
+		out := in
+
+		data, err := os.ReadFile(in)
+		lk.WarnOnErr("%v", err)
 		if err != nil {
-			log.Fatalln(err)
+			return
 		}
-		js := reStructLang(string(data))
+
+		js := reStruct(string(data))
 		js = ConnFieldMapping(js, uri4id, mMeta)
-		os.WriteFile(file, []byte(js), os.ModePerm)
+		if len(js) > 0 {
+			os.WriteFile(out, []byte(js), os.ModePerm)
+		}
 	}()
 
 	func() {
-		file := "./out/la-Mathematics.json"
-		data, err := os.ReadFile(file)
+		in := "./out/la-Mathematics.json"
+		// out := "./out/la-Mathematics-out.json"
+		// if fd.FileExists(out) {
+		// 	return
+		// }
+		out := in
+
+		data, err := os.ReadFile(in)
+		lk.WarnOnErr("%v", err)
 		if err != nil {
-			log.Fatalln(err)
+			return
 		}
-		js := reStructMath(string(data))
+		js := reStruct(string(data))
 		js = ConnFieldMapping(js, uri4id, mMeta)
-		os.WriteFile(file, []byte(js), os.ModePerm)
+		if len(js) > 0 {
+			os.WriteFile(out, []byte(js), os.ModePerm)
+		}
 	}()
 
 	func() {
-		file := "./out/la-Science.json"
-		data, err := os.ReadFile(file)
+		in := "./out/la-Science.json"
+		// out := "./out/la-Science-out.json"
+		// if fd.FileExists(out) {
+		// 	return
+		// }
+		out := in
+
+		data, err := os.ReadFile(in)
+		lk.WarnOnErr("%v", err)
 		if err != nil {
-			log.Fatalln(err)
+			return
 		}
-		js := reStructSci(string(data))
+		js := reStruct(string(data))
 		js = ConnFieldMapping(js, uri4id, mMeta)
-		os.WriteFile(file, []byte(js), os.ModePerm)
+		if len(js) > 0 {
+			os.WriteFile(out, []byte(js), os.ModePerm)
+		}
 	}()
 
 	func() {
-		file := "./out/la-Technologies.json"
-		data, err := os.ReadFile(file)
+		in := "./out/la-The Arts.json"
+		// out := "./out/la-The Arts-out.json"
+		// if fd.FileExists(out) {
+		// 	return
+		// }
+		out := in
+
+		data, err := os.ReadFile(in)
+		lk.WarnOnErr("%v", err)
 		if err != nil {
-			log.Fatalln(err)
+			return
 		}
-		js := reStructTech(string(data))
+		js := reStruct(string(data))
 		js = ConnFieldMapping(js, uri4id, mMeta)
-		os.WriteFile(file, []byte(js), os.ModePerm)
+		if len(js) > 0 {
+			os.WriteFile(out, []byte(js), os.ModePerm)
+		}
 	}()
 
 	func() {
-		file := "./out/la-The Arts.json"
-		data, err := os.ReadFile(file)
+		in := "./out/la-Technologies.json"
+		// out := "./out/la-Technologies-out.json"
+		// if fd.FileExists(out) {
+		// 	return
+		// }
+		out := in
+
+		data, err := os.ReadFile(in)
+		lk.WarnOnErr("%v", err)
 		if err != nil {
-			log.Fatalln(err)
+			return
 		}
-		js := reStructArt(string(data))
+		js := reStruct(string(data))
 		js = ConnFieldMapping(js, uri4id, mMeta)
-		os.WriteFile(file, []byte(js), os.ModePerm)
+		if len(js) > 0 {
+			os.WriteFile(out, []byte(js), os.ModePerm)
+		}
 	}()
 }

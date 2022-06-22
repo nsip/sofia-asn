@@ -153,49 +153,6 @@ NEXTLA:
 	return
 }
 
-// test for restruct_***
-func laRestructure(js string, I int) string {
-
-	for i := 0; i < 100; i++ {
-
-		path := fmt.Sprintf("children.%d.children.%d.code", I, i)
-		testcode := gjson.Get(js, path).String()
-		if testcode == "" {
-			break
-		}
-		fmt.Println(testcode)
-
-		for j := 0; j < 100; j++ {
-			path := fmt.Sprintf("children.%d.children.%d.children.%d.code", I, i, j)
-			testcode := gjson.Get(js, path).String()
-			if testcode == "" {
-				break
-			}
-			fmt.Printf("\t%s\n", testcode)
-
-			for k := 0; k < 100; k++ {
-				path := fmt.Sprintf("children.%d.children.%d.children.%d.children.%d.code", I, i, j, k)
-				testcode := gjson.Get(js, path).String()
-				if testcode == "" {
-					break
-				}
-				fmt.Printf("\t\t%s\n", testcode)
-
-				for l := 0; l < 100; l++ {
-					path := fmt.Sprintf("children.%d.children.%d.children.%d.children.%d.children.%d.code", I, i, j, k, l)
-					testcode := gjson.Get(js, path).String()
-					if testcode == "" {
-						break
-					}
-					fmt.Printf("\t\t\t%s\n", testcode)
-				}
-			}
-		}
-	}
-
-	return ""
-}
-
 func ConnFieldMapping(js, uri string, meta map[string]string) string {
 	r1 := regexp.MustCompile(`"connections":\s*\{[^{}]*\},?`)
 	r2 := regexp.MustCompile(`"[\d\w]{40}":\s*\[([\n\s]*"[\d\w-]+",?[\n\s]*)+\],?`)
@@ -218,3 +175,46 @@ func ConnFieldMapping(js, uri string, meta map[string]string) string {
 		})
 	})
 }
+
+// only test for restruct_***
+// func laRestructure(js string, I int) string {
+
+// 	for i := 0; i < 100; i++ {
+
+// 		path := fmt.Sprintf("children.%d.children.%d.code", I, i)
+// 		testcode := gjson.Get(js, path).String()
+// 		if testcode == "" {
+// 			break
+// 		}
+// 		fmt.Println(testcode)
+
+// 		for j := 0; j < 100; j++ {
+// 			path := fmt.Sprintf("children.%d.children.%d.children.%d.code", I, i, j)
+// 			testcode := gjson.Get(js, path).String()
+// 			if testcode == "" {
+// 				break
+// 			}
+// 			fmt.Printf("\t%s\n", testcode)
+
+// 			for k := 0; k < 100; k++ {
+// 				path := fmt.Sprintf("children.%d.children.%d.children.%d.children.%d.code", I, i, j, k)
+// 				testcode := gjson.Get(js, path).String()
+// 				if testcode == "" {
+// 					break
+// 				}
+// 				fmt.Printf("\t\t%s\n", testcode)
+
+// 				for l := 0; l < 100; l++ {
+// 					path := fmt.Sprintf("children.%d.children.%d.children.%d.children.%d.children.%d.code", I, i, j, k, l)
+// 					testcode := gjson.Get(js, path).String()
+// 					if testcode == "" {
+// 						break
+// 					}
+// 					fmt.Printf("\t\t\t%s\n", testcode)
+// 				}
+// 			}
+// 		}
+// 	}
+
+// 	return ""
+// }

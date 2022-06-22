@@ -7,7 +7,7 @@ import (
 )
 
 func TestGetAllCode(t *testing.T) {
-	data, err := os.ReadFile("../data/tree.pretty.json")
+	data, err := os.ReadFile("../data/Sofia_API_Data_25052022.json")
 	if err != nil {
 		panic(err)
 	}

@@ -40,7 +40,7 @@ var (
 		"connections.CD":     `"Content Descriptions":\s*\[[^\[\]]+\],?`,
 	}
 
-	mAsnCT = tool.GetAsnConceptTerm("../data/ACv9_ScOT_BC_20220118.txt", "../data/scot.jsonld")
+	mAsnCT = tool.GetAsnConceptTerm("../data/ACv9_ScOT_BC_20220422.txt", "../data/scot.jsonld")
 
 	reMerged = func() (*regexp.Regexp, map[string]*regexp.Regexp) {
 		mRE4Each := map[string]*regexp.Regexp{}
@@ -252,15 +252,15 @@ func proc(
 
 		switch nodeType {
 		case "GC":
-			ret = fSf(`"%s": [%s]`, "asn_skillEmbodied", outArrStr)
+			ret = fSf(`"asn_skillEmbodied": [%s]`, outArrStr)
 		case "LA":
-			ret = fSf(`"%s": [%s]`, "dc_relation", outArrStr)
+			ret = fSf(`"dc_relation": [%s]`, outArrStr)
 		case "AS":
-			ret = fSf(`"%s": [%s]`, "asn_hasLevel", outArrStr)
+			ret = fSf(`"asn_hasLevel": [%s]`, outArrStr)
 		case "CCP":
-			ret = fSf(`"%s": [%s]`, "asn_crossSubjectReference", outArrStr)
+			ret = fSf(`"asn_crossSubjectReference": [%s]`, outArrStr)
 		default:
-			log.Fatalf("'%v' is not one of [GC CCP LA AS], code is '%v'", nodeType, code)
+			log.Fatalf("nodeType '%v' is none of [GC CCP LA AS], code is '%v'", nodeType, code)
 		}
 
 		return true, ret
@@ -271,6 +271,7 @@ func proc(
 }
 
 func treeProc3(
+
 	data []byte,
 	la string,
 	mCodeParent map[string]string,

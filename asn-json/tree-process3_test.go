@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	. "github.com/digisan/go-generics/v2"
-	"github.com/digisan/gotk"
+	tc "github.com/digisan/gotk/type-check"
 	jt "github.com/digisan/json-tool"
 )
 
@@ -53,7 +53,7 @@ func TestSort(t *testing.T) {
 				a = &a2
 			}
 			for _, seg := range strings.Split(s, ".") {
-				if gotk.IsNumeric(seg) {
+				if tc.IsNumeric(seg) {
 					n, _ := strconv.Atoi(seg)
 					*a = append(*a, n)
 				}

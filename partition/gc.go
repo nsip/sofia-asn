@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	. "github.com/digisan/go-generics/v2"
 	"github.com/tidwall/gjson"
@@ -147,20 +148,20 @@ func gc(js string) map[string]string {
 									fmt.Println("  ", title2str)
 
 									var m map[string]interface{}
-									switch title2str {
-									case "National Literacy Learning Progression":
+									switch {
+									case strings.EqualFold("National Literacy Learning Progression", title2str):
 										m = mNLLP
-									case "National Numeracy Learning Progression":
+									case strings.EqualFold("National Numeracy Learning Progression", title2str):
 										m = mNNLP
-									case "Critical and Creative Thinking":
+									case strings.EqualFold("Critical and Creative Thinking", title2str):
 										m = mCCT
-									case "Personal and Social Capability":
+									case strings.EqualFold("Personal and Social Capability", title2str):
 										m = mPSC
-									case "Digital Literacy":
+									case strings.EqualFold("Digital Literacy", title2str):
 										m = mDL
-									case "Intercultural Understanding":
+									case strings.EqualFold("Intercultural Understanding", title2str):
 										m = mIU
-									case "Ethical Understanding":
+									case strings.EqualFold("Ethical Understanding", title2str):
 										m = mEU
 									}
 
@@ -185,8 +186,12 @@ func gc(js string) map[string]string {
 	fmt.Println(mEU["title"])
 
 	for _, L2 := range mL2s {
-		out := ""
+		
+		if MapAllEmptyFields(L2) {
+			continue
+		}
 
+		out := ""
 		out, _ = sjson.Set(out, "code", mRoot["code"])
 		out, _ = sjson.Set(out, "uuid", mRoot["uuid"])
 		out, _ = sjson.Set(out, "type", mRoot["type"])

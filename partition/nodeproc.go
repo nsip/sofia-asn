@@ -3,10 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 
+	tc "github.com/digisan/gotk/type-check"
+	lk "github.com/digisan/logkit"
 	"github.com/nsip/sofia-asn/tool"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
@@ -58,7 +61,10 @@ func nodeProcess(data []byte, uri string, meta map[string]string, outdir string)
 		return true
 	})
 
-	out = "{" + strings.Join(parts, ",") + "}"
+	out = "{" + strings.Join(parts, "") + "}"
 	// out = jt.FmtStr(out, "  ")
+
+	lk.FailOnErrWhen(!tc.IsJSON(out), "%v", errors.New("Invalid JSON from node & meta"))
+
 	os.WriteFile(fmt.Sprintf("./%s/node-meta.json", outdir), []byte(out), os.ModePerm)
 }

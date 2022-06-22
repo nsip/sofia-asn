@@ -11,9 +11,14 @@ import (
 
 	"github.com/digisan/gotk/strs"
 	jt "github.com/digisan/json-tool"
+	lk "github.com/digisan/logkit"
 	"github.com/nsip/sofia-asn/tool"
 	"github.com/tidwall/gjson"
 )
+
+func init() {
+	lk.WarnDetail(false)
+}
 
 func addContext(js, ctx string) string {
 	return strings.Replace(js, "{", "{"+context+",", 1)
@@ -179,22 +184,22 @@ func cvt2jsonld(asnpath string) {
 func main() {
 
 	mInputLa := map[string]string{
-		"la-Languages.json":                              "Languages",
-		"la-English.json":                                "English",
-		"la-HASS.json":                                   "Humanities and Social Sciences",
-		"la-HPE.json":                                    "Health and Physical Education",
-		"la-Mathematics.json":                            "Mathematics",
-		"la-Science.json":                                "Science",
-		"la-Technologies.json":                           "Technologies",
-		"la-The Arts.json":                               "The Arts",
-		"ccp-Cross-curriculum Priorities.json":           "CCP",
-		"gc-Critical and Creative Thinking.json":         "GC-CCT",
-		"gc-Digital Literacy.json":                       "GC-DL",
-		"gc-Ethical Understanding.json":                  "GC-EU",
-		"gc-Intercultural Understanding.json":            "GC-IU",
-		"gc-National Literacy Learning Progression.json": "GC-NLLP",
-		"gc-National Numeracy Learning Progression.json": "GC-NNLP",
-		"gc-Personal and Social Capability.json":         "GC-PSC",
+		"la-Languages.json":                      "Languages",
+		"la-English.json":                        "English",
+		"la-Humanities and Social Sciences.json": "Humanities and Social Sciences",
+		"la-Health and Physical Education.json":  "Health and Physical Education",
+		"la-Mathematics.json":                    "Mathematics",
+		"la-Science.json":                        "Science",
+		"la-Technologies.json":                   "Technologies",
+		"la-The Arts.json":                       "The Arts",
+		"ccp-Cross-curriculum Priorities.json":   "CCP",
+		"gc-Critical and Creative Thinking.json": "GC-CCT",
+		"gc-Digital Literacy.json":               "GC-DL",
+		"gc-Ethical Understanding.json":          "GC-EU",
+		"gc-Intercultural Understanding.json":    "GC-IU",
+		// "gc-National Literacy Learning Progression.json": "GC-NLLP",
+		// "gc-National Numeracy Learning Progression.json": "GC-NNLP",
+		// "gc-Personal and Social Capability.json":         "GC-PSC",
 	}
 
 	os.MkdirAll("./out", os.ModePerm)
@@ -212,5 +217,5 @@ func main() {
 	}
 	wg.Wait()
 
-	fmt.Println("FORMAT each out file, then process extra duplicated line in 'main_test.go'")
+	lk.Warn("FORMAT each out file, then process extra duplicated line in 'main_test.go'")
 }

@@ -1,6 +1,7 @@
 package tool
 
 import (
+	"fmt"
 	"math"
 	"regexp"
 	"strings"
@@ -22,26 +23,22 @@ func GetCodeParentMap(data []byte) map[string]string {
 
 	js := string(data)
 
-	r0 := regexp.MustCompile(`\n[ ]{6}"code":(\s)*"[^"]+"`)
-	r1 := regexp.MustCompile(`\n[ ]{10}"code":(\s)*"[^"]+"`)
-	r2 := regexp.MustCompile(`\n[ ]{14}"code":(\s)*"[^"]+"`)
-	r3 := regexp.MustCompile(`\n[ ]{18}"code":(\s)*"[^"]+"`)
-	r4 := regexp.MustCompile(`\n[ ]{22}"code":(\s)*"[^"]+"`)
-	r5 := regexp.MustCompile(`\n[ ]{26}"code":(\s)*"[^"]+"`)
-	r6 := regexp.MustCompile(`\n[ ]{30}"code":(\s)*"[^"]+"`)
-	r7 := regexp.MustCompile(`\n[ ]{34}"code":(\s)*"[^"]+"`)
-	r8 := regexp.MustCompile(`\n[ ]{38}"code":(\s)*"[^"]+"`)
-	r9 := regexp.MustCompile(`\n[ ]{42}"code":(\s)*"[^"]+"`)
-	r10 := regexp.MustCompile(`\n[ ]{46}"code":(\s)*"[^"]+"`)
-	r11 := regexp.MustCompile(`\n[ ]{50}"code":(\s)*"[^"]+"`)
-	r12 := regexp.MustCompile(`\n[ ]{54}"code":(\s)*"[^"]+"`)
+	// check
+	if !strings.HasPrefix(js, "{\n  \"code\": \"root\",") &&
+		!strings.HasPrefix(js, "{\r\n  \"code\": \"root\",") {
+		panic("input json MUST be well formatted, indent is 2 spaces.")
+	}
+
+	reCodes := []*regexp.Regexp{}
+	for i := 6; i <= 54; i += 4 {
+		reCodes = append(reCodes, regexp.MustCompile(fmt.Sprintf(`\n[ ]{%d}"code":(\s)*"[^"]+"`, i)))
+	}
 
 	mCodeChildren := make(map[string][]string)
 	mCodeParent := make(map[string]string)
-
 	mLvlStartGrp := []map[string]int{}
 
-	for _, r := range []*regexp.Regexp{r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12} {
+	for _, r := range reCodes {
 
 		locGrp := r.FindAllStringIndex(js, -1)
 

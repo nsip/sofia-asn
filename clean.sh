@@ -12,3 +12,5 @@ rm -rf ./asn-json/*.gz
 rm -rf ./asn-json-ld/asn-json-ld
 rm -rf ./asn-json-ld/out*
 rm -rf ./asn-json-ld/*.gz
+
+rm -rf ./precheck/*.log

@@ -6,7 +6,7 @@ import (
 )
 
 func TestAcScot(t *testing.T) {
-	m := getAcScotMap("../data/ACv9_ScOT_BC_20220118.txt")
+	m := getAcScotMap("../data/ACv9_ScOT_BC_20220422.txt")
 	fmt.Println(len(m))
 	fmt.Println(m["AC9ADA10C01"])
 }
@@ -20,6 +20,6 @@ func TestScotJsonLd(t *testing.T) {
 }
 
 func TestGetAsnConceptTerm(t *testing.T) {
-	m := GetAsnConceptTerm("../data/ACv9_ScOT_BC_20220118.txt", "../data/scot.jsonld")
+	m := GetAsnConceptTerm("../data/ACv9_ScOT_BC_20220422.txt", "../data/scot.jsonld")
 	fmt.Println(m["AC9HC10K05"])
 }
