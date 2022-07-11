@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -19,10 +20,12 @@ func reStruct(js string) string {
 	fSf := fmt.Sprintf
 
 	var (
-		mLA2Path = map[string]string{}
-		mAS      = make(map[string]string)
-		asCodes  = []string{}
-		laCodes  = []string{}
+		mLA2PathLvl = map[string]string{}
+		mLA2PathLA  = map[string]string{}
+		mAS         = make(map[string]string)
+		asCodes     = []string{}
+		laCodes     = []string{}
+		laCodesRem  = []string{}
 	)
 
 	// 0:
@@ -43,7 +46,28 @@ func reStruct(js string) string {
 			if code1 == "" {
 				break
 			}
-			fmt.Printf("\t%s\n", code1)
+			// fmt.Printf("\t%s\n", code1)
+
+			path = fSf(P1+"doc.typeName", I, i)
+			if typeName := gjson.Get(js, path).String(); typeName == "Level" {
+				fmt.Printf("\t%s - ok\n", code1)
+
+				if code0 == "AS" {
+					asCodes = append(asCodes, code1)
+					mAS[code1] = gjson.Get(js, fSf(P1+"children.0", I, i)).String()
+				}
+				if code0 == "LA" {
+					laCodes = append(laCodes, code1)
+					mLA2PathLvl[code1] = fSf(P1+"asn_hasLevel", I, i)
+				}
+
+			} else if typeName == "Learning Area" {
+
+				if code0 == "LA" {
+					laCodesRem = append(laCodesRem, code1)
+					mLA2PathLA[code1] = fSf(P1+"asn_hasLevel", I, i)
+				}
+			}
 
 			// 2:
 			for j := 0; j < 100; j++ {
@@ -65,7 +89,14 @@ func reStruct(js string) string {
 					}
 					if code0 == "LA" {
 						laCodes = append(laCodes, code2)
-						mLA2Path[code2] = fSf(P2+"asn_hasLevel", I, i, j)
+						mLA2PathLvl[code2] = fSf(P2+"asn_hasLevel", I, i, j)
+					}
+
+				} else if typeName == "Learning Area" {
+
+					if code0 == "LA" {
+						laCodesRem = append(laCodesRem, code2)
+						mLA2PathLA[code2] = fSf(P2+"asn_hasLevel", I, i, j)
 					}
 				}
 
@@ -89,7 +120,14 @@ func reStruct(js string) string {
 						}
 						if code0 == "LA" {
 							laCodes = append(laCodes, code3)
-							mLA2Path[code3] = fSf(P3+"asn_hasLevel", I, i, j, k)
+							mLA2PathLvl[code3] = fSf(P3+"asn_hasLevel", I, i, j, k)
+						}
+
+					} else if typeName == "Learning Area" {
+
+						if code0 == "LA" {
+							laCodesRem = append(laCodesRem, code3)
+							mLA2PathLA[code3] = fSf(P3+"asn_hasLevel", I, i, j, k)
 						}
 					}
 
@@ -113,7 +151,14 @@ func reStruct(js string) string {
 							}
 							if code0 == "LA" {
 								laCodes = append(laCodes, code4)
-								mLA2Path[code4] = fSf(P4+"asn_hasLevel", I, i, j, k, l)
+								mLA2PathLvl[code4] = fSf(P4+"asn_hasLevel", I, i, j, k, l)
+							}
+
+						} else if typeName == "Learning Area" {
+
+							if code0 == "LA" {
+								laCodesRem = append(laCodesRem, code4)
+								mLA2PathLA[code4] = fSf(P4+"asn_hasLevel", I, i, j, k, l)
 							}
 						}
 
@@ -137,7 +182,14 @@ func reStruct(js string) string {
 								}
 								if code0 == "LA" {
 									laCodes = append(laCodes, code5)
-									mLA2Path[code5] = fSf(P5+"asn_hasLevel", I, i, j, k, l, m)
+									mLA2PathLvl[code5] = fSf(P5+"asn_hasLevel", I, i, j, k, l, m)
+								}
+
+							} else if typeName == "Learning Area" {
+
+								if code0 == "LA" {
+									laCodesRem = append(laCodesRem, code5)
+									mLA2PathLA[code5] = fSf(P5+"asn_hasLevel", I, i, j, k, l, m)
 								}
 							}
 						}
@@ -147,30 +199,41 @@ func reStruct(js string) string {
 		}
 	}
 
+	// checking unused asCode
+	asRemCont := []string{}
 	for _, as := range asCodes {
 		la := strings.TrimPrefix(as, "AS")
 		la = strings.TrimSuffix(la, "L")
 		if NotIn(la, laCodes...) {
 			lk.Warn("AS has [%s], BUT LA has no [%s]", as, la)
+			asRemCont = append(asRemCont, mAS[as])
 		}
 	}
 
+	// checking which laCode has no asCode
 	for _, la := range laCodes {
 		as := "AS" + la + "L"
 		if NotIn(as, asCodes...) {
-			lk.Warn("LA has [%s], BUT AS has no [%s]", la, as)
+			lk.Log("LA has [%s], BUT AS has no [%s], ignore [%s]", la, as, as)
 		}
 	}
 
-	for laCode, path := range mLA2Path {
+	for laCode, path := range mLA2PathLvl {
 		// path += fmt.Sprintf(".%d", len(gjson.Get(js, path).Array())) // modify path, append to the last child
 		if content, ok := mAS["AS"+laCode+"L"]; ok {
 			if content != "" {
+				fmt.Println("PATH: --->", path)
 				js, _ = sjson.SetRaw(js, path, content)
 			}
 		} else {
-			js, _ = sjson.Set(js, path, "")
+			// keey `"asn_hasLevel": ""` ?
+			// js, _ = sjson.Set(js, path, "")
 		}
+	}
+
+	lk.FailOnErrWhen(len(mLA2PathLA) > 1, "%v", errors.New("Learning Area's count MUST be One"))
+	for _, path := range mLA2PathLA {
+		js, _ = sjson.SetRaw(js, path, "["+strings.Join(asRemCont, ",")+"]")
 	}
 
 	// remove AS part

@@ -8,12 +8,12 @@ import (
 )
 
 func TestFixOneDupKey(t *testing.T) {
-	fpath := "./out/la-The Arts"
+	fpath := "./out/la-Science-fix"
 	data, err := os.ReadFile(fpath + ".json")
 	if err != nil {
 		panic(err)
 	}
-	n := 26
+	n := 30
 	prefix := "\n" + strings.Repeat(" ", n) + "\"asn_skillEmbodied\":"
 	fixed := jt.FixOneDupKey(string(data), prefix)
 	os.WriteFile(fpath+"-fix.json", []byte(fixed), os.ModePerm)

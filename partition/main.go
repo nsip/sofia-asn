@@ -12,6 +12,10 @@ var (
 	uri4id = "http://uat.vocabulary.curriculum.edu.au/" // "http://rdf.curriculum.edu.au/202110/"
 )
 
+func init() {
+	lk.Log2F(true, "partition.log")
+}
+
 func main() {
 
 	outdir := "out"
@@ -56,14 +60,8 @@ func main() {
 	//////////////////////////////////////////////////////////////
 
 	func() {
-		in := "./out/la-English.json"
-		// out := "./out/la-English-out.json"
-		// if fd.FileExists(out) {
-		// 	return
-		// }
-		out := in
-
-		data, err := os.ReadFile(in)
+		out := "./out/la-English.json"
+		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)
 		if err != nil {
 			return
@@ -76,14 +74,8 @@ func main() {
 	}()
 
 	func() {
-		in := "./out/la-Humanities and Social Sciences.json" // Humanities and Social Sciences.json // HASS.json
-		// out := "./out/la-Humanities and Social Sciences-out.json"
-		// if fd.FileExists(out) {
-		// 	return
-		// }
-		out := in
-
-		data, err := os.ReadFile(in)
+		out := "./out/la-Humanities and Social Sciences.json" // Humanities and Social Sciences.json // HASS.json
+		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)
 		if err != nil {
 			return
@@ -96,14 +88,8 @@ func main() {
 	}()
 
 	func() {
-		in := "./out/la-Health and Physical Education.json" // Health and Physical Education.json // HPE.json
-		// out := "./out/la-Health and Physical Education-out.json"
-		// if fd.FileExists(out) {
-		// 	return
-		// }
-		out := in
-
-		data, err := os.ReadFile(in)
+		out := "./out/la-Health and Physical Education.json" // Health and Physical Education.json // HPE.json
+		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)
 		if err != nil {
 			return
@@ -116,35 +102,8 @@ func main() {
 	}()
 
 	func() {
-		in := "./out/la-Languages.json"
-		// out := "./out/la-Languages-out.json"
-		// if fd.FileExists(out) {
-		// 	return
-		// }
-		out := in
-
-		data, err := os.ReadFile(in)
-		lk.WarnOnErr("%v", err)
-		if err != nil {
-			return
-		}
-
-		js := reStruct(string(data))
-		js = ConnFieldMapping(js, uri4id, mMeta)
-		if len(js) > 0 {
-			os.WriteFile(out, []byte(js), os.ModePerm)
-		}
-	}()
-
-	func() {
-		in := "./out/la-Mathematics.json"
-		// out := "./out/la-Mathematics-out.json"
-		// if fd.FileExists(out) {
-		// 	return
-		// }
-		out := in
-
-		data, err := os.ReadFile(in)
+		out := "./out/la-Languages.json"
+		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)
 		if err != nil {
 			return
@@ -157,14 +116,8 @@ func main() {
 	}()
 
 	func() {
-		in := "./out/la-Science.json"
-		// out := "./out/la-Science-out.json"
-		// if fd.FileExists(out) {
-		// 	return
-		// }
-		out := in
-
-		data, err := os.ReadFile(in)
+		out := "./out/la-Mathematics.json"
+		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)
 		if err != nil {
 			return
@@ -177,14 +130,8 @@ func main() {
 	}()
 
 	func() {
-		in := "./out/la-The Arts.json"
-		// out := "./out/la-The Arts-out.json"
-		// if fd.FileExists(out) {
-		// 	return
-		// }
-		out := in
-
-		data, err := os.ReadFile(in)
+		out := "./out/la-Science.json"
+		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)
 		if err != nil {
 			return
@@ -196,15 +143,25 @@ func main() {
 		}
 	}()
 
+	// ********************************* //
 	func() {
-		in := "./out/la-Technologies.json"
-		// out := "./out/la-Technologies-out.json"
-		// if fd.FileExists(out) {
-		// 	return
-		// }
-		out := in
+		out := "./out/la-The Arts.json"
+		data, err := os.ReadFile(out)
+		lk.WarnOnErr("%v", err)
+		if err != nil {
+			return
+		}
+		js := reStruct(string(data))
+		js = ConnFieldMapping(js, uri4id, mMeta)
+		if len(js) > 0 {
+			os.WriteFile(out, []byte(js), os.ModePerm)
+		}
+	}()
 
-		data, err := os.ReadFile(in)
+	// ********************************* //
+	func() {
+		out := "./out/la-Technologies.json"
+		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)
 		if err != nil {
 			return
