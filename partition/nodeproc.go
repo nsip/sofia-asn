@@ -8,7 +8,9 @@ import (
 	"os"
 	"strings"
 
+	gio "github.com/digisan/gotk/io"
 	tc "github.com/digisan/gotk/type-check"
+	jt "github.com/digisan/json-tool"
 	lk "github.com/digisan/logkit"
 	"github.com/nsip/sofia-asn/tool"
 	"github.com/tidwall/gjson"
@@ -67,4 +69,172 @@ func nodeProcess(data []byte, uri string, meta map[string]string, outdir string)
 	lk.FailOnErrWhen(!tc.IsJSON(out), "%v", errors.New("Invalid JSON from node & meta"))
 
 	os.WriteFile(fmt.Sprintf("./%s/node-meta.json", outdir), []byte(out), os.ModePerm)
+}
+
+//////////////////////////////////////////////////////////////////////
+
+func LoadUrl(fpath string) map[string]string {
+	m := make(map[string]string)
+	gio.FileLineScan(fpath, func(line string) (bool, string) {
+		ss := strings.Split(line, "\t")
+		m[ss[0]] = ss[1]
+		return true, ""
+	}, "")
+	return m
+}
+
+func MarkUrl(ids, codes []string, mCodeUrl, mIdUrl map[string]string) {
+
+	for _, code := range codes {
+		if url, ok := mCodeUrl[code]; ok {
+			for i, code := range codes {
+				if code != "root" && code != "LA" && code != "AS" {
+					mCodeUrl[code] = url
+					mIdUrl[ids[i]] = url
+				}
+			}
+			return
+		}
+	}
+
+	url := ""
+	for _, code := range codes {
+		switch code {
+		case "HAS", "HASS", "ASHAS", "ASHASS":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/HASS/"
+		case "ENG", "ASENG":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/ENG/"
+		case "LAN", "ASLAN":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/LAN/"
+		case "SCI", "ASSCI":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/SCI/"
+		case "ART", "ASART":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/ART/"
+		case "HPE", "ASHPE":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/HPE/"
+		case "MAT", "ASMAT":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/MAT/"
+		case "TEC", "ASTEC":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/TEC/"
+
+		case "CCT":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/CCT/"
+		case "N":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/N/"
+		case "DL":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/DL/"
+		case "L":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/L/"
+		case "PSC":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/PSC/"
+		case "IU":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/IU/"
+		case "EU":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/EU/"
+
+		case "AA":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/CCP/AA/"
+		case "S":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/CCP/S/"
+		case "A_TSI":
+			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/CCP/A_TSI/"
+		}
+	}
+
+	if len(codes) > 2 && url == "" {
+		panic("Need Code: " + strings.Join(codes, ","))
+	}
+
+	for i, code := range codes {
+		if code != "root" && code != "LA" && code != "AS" {
+			mCodeUrl[code] = url
+			mIdUrl[ids[i]] = url
+		}
+	}
+}
+
+func TrackCode(ms map[string]string, code string) (codes, ids []string) {
+	ID := ""
+	for id, valstr := range ms {
+		if gjson.Get(valstr, "code").String() == code {
+			ID = id
+			break
+		}
+	}
+	if ID != "" {
+		for _, id := range TrackId(ms, ID) {
+			valstr := ms[id]
+			codes = append(codes, gjson.Get(valstr, "code").String())
+			ids = append(ids, id)
+		}
+	}
+	return
+}
+
+func TrackId(ms map[string]string, id string) (ids []string) {
+	ids = append(ids, id)
+	for parent := IsChild(ms, id); len(parent) > 0; parent = IsChild(ms, parent) {
+		ids = append(ids, parent)
+	}
+	return
+}
+
+func IsChild(ms map[string]string, childId string) string {
+	for id := range ms {
+		if HasChild(ms, id, childId) {
+			return id
+		}
+	}
+	return ""
+}
+
+func HasChild(ms map[string]string, id, childId string) bool {
+	valstr := ms[id]
+	if children := gjson.Get(valstr, "children").Array(); len(children) > 0 {
+		for _, child := range children {
+			// fmt.Println(child)
+			if childId == child.String() {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func Scan2map(data []byte) map[string]any {
+	M := make(map[string]any)
+	if err := json.Unmarshal(data, &M); err != nil {
+		panic(err)
+	}
+	return M
+}
+
+func Scan2mapstrval(data []byte) map[string]string {
+	M := Scan2map(data)
+	ret := make(map[string]string)
+	for k, v := range M {
+		vdata, err := json.Marshal(v)
+		if err != nil {
+			panic(err)
+		}
+		ret[k] = string(vdata)
+	}
+	return ret
+}
+
+func Scan2flatmap(data []byte) map[string]map[string]any {
+	M := Scan2map(data)
+	ret := make(map[string]map[string]any)
+	for k, v := range M {
+		vdata, err := json.Marshal(v)
+		if err != nil {
+			panic(err)
+		}
+		mf, err := jt.Flatten(vdata)
+		if err != nil {
+			panic(err)
+		}
+		ret[k] = mf
+	}
+	return ret
 }

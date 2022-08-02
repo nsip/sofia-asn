@@ -60,6 +60,7 @@ func main() {
 	//////////////////////////////////////////////////////////////
 
 	func() {
+		uri4id := "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/ENG/"
 		out := "./out/la-English.json"
 		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)
@@ -74,6 +75,7 @@ func main() {
 	}()
 
 	func() {
+		uri4id := "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/HASS/"
 		out := "./out/la-Humanities and Social Sciences.json" // Humanities and Social Sciences.json // HASS.json
 		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)
@@ -88,6 +90,7 @@ func main() {
 	}()
 
 	func() {
+		uri4id := "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/HPE/"
 		out := "./out/la-Health and Physical Education.json" // Health and Physical Education.json // HPE.json
 		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)
@@ -102,6 +105,7 @@ func main() {
 	}()
 
 	func() {
+		uri4id := "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/LAN/"
 		out := "./out/la-Languages.json"
 		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)
@@ -116,6 +120,7 @@ func main() {
 	}()
 
 	func() {
+		uri4id := "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/MAT/"
 		out := "./out/la-Mathematics.json"
 		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)
@@ -130,6 +135,7 @@ func main() {
 	}()
 
 	func() {
+		uri4id := "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/SCI/"
 		out := "./out/la-Science.json"
 		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)
@@ -143,8 +149,8 @@ func main() {
 		}
 	}()
 
-	// ********************************* //
 	func() {
+		uri4id := "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/ART/"
 		out := "./out/la-The Arts.json"
 		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)
@@ -158,8 +164,8 @@ func main() {
 		}
 	}()
 
-	// ********************************* //
 	func() {
+		uri4id := "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/TEC/"
 		out := "./out/la-Technologies.json"
 		data, err := os.ReadFile(out)
 		lk.WarnOnErr("%v", err)

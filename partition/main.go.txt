@@ -1,0 +1,82 @@
+package main
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/digisan/gotk/misc"
+)
+
+var (
+	fSf    = fmt.Sprintf
+	uri4id = "http://uat.vocabulary.curriculum.edu.au/" // "http://rdf.curriculum.edu.au/202110/"
+)
+
+func main() {
+	defer misc.TrackTime(time.Now())
+
+	// data, err := os.ReadFile("../data/Sofia-API-Nodes-Data-09062022.json")
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// ms := Scan2mapstrval(data)
+
+	// str := ms["92b62493-c251-421f-b774-235cfd597852"]
+	// r := gjson.Get(str, "children.#").Int()
+	// fmt.Println(r)
+
+	// mf := scan2flatmap(data)
+	// m := mf["92b62493-c251-421f-b774-235cfd597852"]
+	// v := m["doc.typeName"]
+	// fmt.Println(v)
+	// v = m["children.10"]
+	// fmt.Println(v)
+
+	// trackCode(ms, mf, "92b62493-c251-421f-b774-235cfd597852")
+
+	// fmt.Println(hasChild(ms, "92b62493-c251-421f-b774-235cfd597852", "48e7794a-fd99-4bbd-965e-090c24a4ca00"))
+
+	// fmt.Println(isChild(ms, "48e7794a-fd99-4bbd-965e-090c24a4ca00"))
+
+	////////////////////////////////////////////////
+
+	// mCodeUrl := make(map[string]string)
+	// mIdUrl := make(map[string]string)
+
+	// Idx := 0
+	// for _, valstr := range ms {
+
+	// 	code := gjson.Get(valstr, "code").String()
+	// 	codes, ids := TrackCode(ms, code)
+	// 	// for i, code := range codes {
+	// 	// 	fmt.Println(code, ids[i])
+	// 	// }
+
+	// 	MarkUrl(ids, codes, mCodeUrl, mIdUrl)
+
+	// 	fmt.Printf("processing... %d, %v\n", Idx, codes)
+	// 	Idx++
+	// }
+
+	// fmt.Println(len(mIdUrl))
+	// fmt.Println(len(mCodeUrl))
+
+	// fpathIdUrl := "./id-url.txt"
+	// for id, url := range mIdUrl {
+	// 	gio.MustAppendFile(fpathIdUrl, []byte(fmt.Sprintf("%s\t%s", id, url)), true)
+	// }
+
+	// fpathCodeUrl := "./code-url.txt"
+	// for id, url := range mCodeUrl {
+	// 	gio.MustAppendFile(fpathCodeUrl, []byte(fmt.Sprintf("%s\t%s", id, url)), true)
+	// }
+
+	////////////////////////////////////////////////
+
+	mCodeUrl := LoadUrl("./code-url.txt")
+	mIdUrl := LoadUrl("./id-url.txt")
+
+	fmt.Println(len(mCodeUrl))
+	fmt.Println(len(mIdUrl))
+}
