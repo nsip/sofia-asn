@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	gio "github.com/digisan/gotk/io"
+	// . "github.com/digisan/go-generics/v2"
 	tc "github.com/digisan/gotk/type-check"
 	jt "github.com/digisan/json-tool"
 	lk "github.com/digisan/logkit"
@@ -73,71 +73,86 @@ func nodeProcess(data []byte, uri string, meta map[string]string, outdir string)
 
 //////////////////////////////////////////////////////////////////////
 
-func LoadUrl(fpath string) map[string]string {
-	m := make(map[string]string)
-	gio.FileLineScan(fpath, func(line string) (bool, string) {
-		ss := strings.Split(line, "\t")
-		m[ss[0]] = ss[1]
-		return true, ""
-	}, "")
-	return m
-}
-
 func MarkUrl(ids, codes []string, mCodeUrl, mIdUrl map[string]string) {
 
-	for _, code := range codes {
-		if url, ok := mCodeUrl[code]; ok {
-			for i, code := range codes {
-				if code != "root" && code != "LA" && code != "AS" {
-					mCodeUrl[code] = url
-					mIdUrl[ids[i]] = url
-				}
-			}
-			return
-		}
-	}
+	// for _, code := range codes {
+	// 	if url, ok := mCodeUrl[code]; ok {
+	// 		for i, code := range codes {
+	// 			if NotIn(code, "root", "LA", "AS", "GC", "CCP") {
+	// 				mCodeUrl[code] = url
+	// 				mIdUrl[ids[i]] = url
+	// 			}
+	// 		}
+	// 		return
+	// 	}
+	// }
 
 	url := ""
-	for _, code := range codes {
-		switch code {
-		case "HAS", "HASS", "ASHAS", "ASHASS":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/HASS/"
-		case "ENG", "ASENG":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/ENG/"
-		case "LAN", "ASLAN":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/LAN/"
-		case "SCI", "ASSCI":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/SCI/"
-		case "ART", "ASART":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/ART/"
-		case "HPE", "ASHPE":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/HPE/"
-		case "MAT", "ASMAT":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/MAT/"
-		case "TEC", "ASTEC":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/TEC/"
+	for i, code := range codes {
+		if i == len(codes)-3 {
+			switch code {
+			case "HAS", "HASS", "ASHAS", "ASHASS":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/HASS/"
+			case "ENG", "ASENG":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/ENG/"
+			case "LAN", "ASLAN":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/LAN/"
+			case "SCI", "ASSCI":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/SCI/"
+			case "ART", "ASART":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/ART/"
+			case "HPE", "ASHPE":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/HPE/"
+			case "MAT", "ASMAT":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/MAT/"
+			case "TEC", "ASTEC":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/TEC/"
 
-		case "CCT":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/CCT/"
-		case "N":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/N/"
-		case "DL":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/DL/"
-		case "L":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/L/"
-		case "PSC":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/PSC/"
-		case "IU":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/IU/"
-		case "EU":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/EU/"
+			case "CCT":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/CCT/"
+			case "N":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/N/"
+			case "DL":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/DL/"
+			case "L":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/L/"
+			case "PSC":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/PSC/"
+			case "IU":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/IU/"
+			case "EU":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/EU/"
 
-		case "AA":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/CCP/AA/"
-		case "S":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/CCP/S/"
-		case "A_TSI":
-			url = "http://uat.vocabulary.curriculum.edu.au/MRAC/CCP/A_TSI/"
+			case "AA":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/CCP/AA/"
+			case "S":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/CCP/S/"
+			case "A_TSI":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/CCP/A_TSI/"
+			}
+			break
+		}
+		if i == len(codes)-2 {
+			switch code {
+			case "AS", "LA":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/LA/"
+			case "GC":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/GC/"
+			case "CCP":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/CCP/"
+			}
+			mCodeUrl[code] = url
+			mIdUrl[ids[i]] = url
+			break
+		}
+		if i == len(codes)-1 {
+			switch code {
+			case "root":
+				url = "http://uat.vocabulary.curriculum.edu.au/MRAC/"
+			}
+			mCodeUrl[code] = url
+			mIdUrl[ids[i]] = url
+			break
 		}
 	}
 
@@ -146,9 +161,13 @@ func MarkUrl(ids, codes []string, mCodeUrl, mIdUrl map[string]string) {
 	}
 
 	for i, code := range codes {
-		if code != "root" && code != "LA" && code != "AS" {
-			mCodeUrl[code] = url
-			mIdUrl[ids[i]] = url
+		if i < len(codes)-2 {
+			if _, ok := mCodeUrl[code]; !ok {
+				mCodeUrl[code] = url
+			}
+			if _, ok := mIdUrl[ids[i]]; !ok {
+				mIdUrl[ids[i]] = url
+			}
 		}
 	}
 }
@@ -168,7 +187,7 @@ func TrackCode(ms map[string]string, code string) (codes, ids []string) {
 			ids = append(ids, id)
 		}
 	}
-	return
+	return // Reverse(codes), Reverse(ids)
 }
 
 func TrackId(ms map[string]string, id string) (ids []string) {
@@ -176,7 +195,7 @@ func TrackId(ms map[string]string, id string) (ids []string) {
 	for parent := IsChild(ms, id); len(parent) > 0; parent = IsChild(ms, parent) {
 		ids = append(ids, parent)
 	}
-	return
+	return // Reverse(ids)
 }
 
 func IsChild(ms map[string]string, childId string) string {

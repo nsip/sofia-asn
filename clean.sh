@@ -15,3 +15,6 @@ rm -rf ./asn-json-ld/asn-json-ld
 rm -rf ./asn-json-ld/*.log
 
 rm -rf ./precheck/*.log
+
+rm -rf ./url-prefix/url-prefix
+rm -rf ./url-prefix/*.log
