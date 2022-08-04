@@ -32,7 +32,7 @@ func main() {
 
 	///////////////////////////////////////
 
-	r := regexp.MustCompile(`http://uat.vocabulary.curriculum.edu.au/+[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}`)
+	r := regexp.MustCompile(`http://vocabulary.curriculum.edu.au/+[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}`)
 
 	dirIn := "../asn-json/out"
 	dirOut := "../asn-json/out/url"
