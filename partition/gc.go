@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 
 	. "github.com/digisan/go-generics/v2"
 	"github.com/tidwall/gjson"
@@ -14,14 +13,23 @@ func gc(js string) map[string]string {
 	mOut := make(map[string]string)
 
 	var (
-		gcTitles = []string{
-			"National Literacy Learning Progression",
-			"National Numeracy Learning Progression",
-			"Critical and Creative Thinking",
-			"Personal and Social Capability",
-			"Digital Literacy",
-			"Intercultural Understanding",
-			"Ethical Understanding",
+		// gcTitles = []string{
+		// 	"Literacy",
+		// 	"Numeracy",
+		// 	"Critical and Creative Thinking",
+		// 	"Personal and Social capability",
+		// 	"Digital Literacy",
+		// 	"Intercultural Understanding",
+		// 	"Ethical Understanding",
+		// }
+		gcCodes = []string{
+			"CCT",
+			"DL",
+			"EU",
+			"IU",
+			"L",
+			"N",
+			"PSC",
 		}
 	)
 
@@ -46,7 +54,7 @@ func gc(js string) map[string]string {
 	}
 
 	// L2
-	mNLLP := map[string]interface{}{
+	mL := map[string]interface{}{
 		"code":       "",
 		"uuid":       "",
 		"type":       "",
@@ -56,7 +64,7 @@ func gc(js string) map[string]string {
 	}
 
 	// L2
-	mNNLP := map[string]interface{}{
+	mN := map[string]interface{}{
 		"code":       "",
 		"uuid":       "",
 		"type":       "",
@@ -116,7 +124,7 @@ func gc(js string) map[string]string {
 	}
 
 	var (
-		mL2s = []map[string]interface{}{mNLLP, mNNLP, mCCT, mPSC, mDL, mIU, mEU}
+		mL2s = []map[string]interface{}{mL, mN, mCCT, mPSC, mDL, mIU, mEU}
 	)
 
 	valueC1 := gjson.Get(js, "children")
@@ -143,26 +151,48 @@ func gc(js string) map[string]string {
 							if r2.IsObject() {
 								block2 := r2.String()
 								title2str := gjson.Get(block2, "title").String()
+								code2str := gjson.Get(block2, "code").String()
 
-								if In(title2str, gcTitles...) {
-									fmt.Println("  ", title2str)
+								// if In(title2str, gcTitles...) {
+								// 	fmt.Println("  ", title2str)
+
+								if In(code2str, gcCodes...) {
+									fmt.Println("  ", title2str, "  ", code2str)
 
 									var m map[string]interface{}
-									switch {
-									case strings.EqualFold("National Literacy Learning Progression", title2str):
-										m = mNLLP
-									case strings.EqualFold("National Numeracy Learning Progression", title2str):
-										m = mNNLP
-									case strings.EqualFold("Critical and Creative Thinking", title2str):
+
+									// switch {
+									// case strings.EqualFold("Literacy", title2str):
+									// 	m = mNLLP
+									// case strings.EqualFold("Numeracy", title2str):
+									// 	m = mNNLP
+									// case strings.EqualFold("Critical and Creative Thinking", title2str):
+									// 	m = mCCT
+									// case strings.EqualFold("Personal and Social capability", title2str):
+									// 	m = mPSC
+									// case strings.EqualFold("Digital Literacy", title2str):
+									// 	m = mDL
+									// case strings.EqualFold("Intercultural Understanding", title2str):
+									// 	m = mIU
+									// case strings.EqualFold("Ethical Understanding", title2str):
+									// 	m = mEU
+									// }
+
+									switch code2str {
+									case "CCT":
 										m = mCCT
-									case strings.EqualFold("Personal and Social Capability", title2str):
-										m = mPSC
-									case strings.EqualFold("Digital Literacy", title2str):
+									case "DL":
 										m = mDL
-									case strings.EqualFold("Intercultural Understanding", title2str):
-										m = mIU
-									case strings.EqualFold("Ethical Understanding", title2str):
+									case "EU":
 										m = mEU
+									case "IU":
+										m = mIU
+									case "L":
+										m = mL
+									case "N":
+										m = mN
+									case "PSC":
+										m = mPSC
 									}
 
 									m["code"] = gjson.Get(block2, "code").String()
@@ -186,7 +216,7 @@ func gc(js string) map[string]string {
 	fmt.Println(mEU["title"])
 
 	for _, L2 := range mL2s {
-		
+
 		if MapAllEmptyFields(L2) {
 			continue
 		}

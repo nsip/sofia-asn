@@ -84,9 +84,9 @@ func main() {
 			"gc-Digital Literacy.json":               "GC-DL",
 			"gc-Ethical Understanding.json":          "GC-EU",
 			"gc-Intercultural Understanding.json":    "GC-IU",
-			// "gc-National Literacy Learning Progression.json": "GC-NLLP",
-			// "gc-National Numeracy Learning Progression.json": "GC-NNLP",
-			// "gc-Personal and Social Capability.json":         "GC-PSC",
+			"gc-Literacy.json":                       "GC-L",
+			"gc-Numeracy.json":                       "GC-N",
+			"gc-Personal and Social capability.json": "GC-PSC",
 		}
 
 		os.MkdirAll("./out", os.ModePerm)

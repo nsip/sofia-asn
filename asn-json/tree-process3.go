@@ -147,7 +147,7 @@ func proc(
 		}
 
 		// "dcterms_educationLevel"
-		if NotIn(la, "CCP", "GC-NLLP", "GC-NNLP") {
+		if NotIn(la, "CCP", "GC-L", "GC-N") {
 			if value == "Level" { // see doc.typeName: 'Level', update global retEL
 				outArrs := []string{}
 				for _, y := range getYears(mData, path) {

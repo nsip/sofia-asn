@@ -20,13 +20,19 @@ partition/out*/
 partition/*.exe
 partition/partition
 partition/*.gz
+partition/*.log
 
 asn-json/out*/
 asn-json/*.exe
 asn-json/asn-json
 asn-json/*.gz
+asn-json/*.log
 
 asn-json-ld/out*/
 asn-json-ld/*.exe
-asn-json-ld/asn-json
+asn-json-ld/asn-json-ld
 asn-json-ld/*.gz
+asn-json-ld/*.log
+
+url-prefix/url-prefix
+url-prefix/*.log
