@@ -55,72 +55,79 @@ func gc(js string) map[string]string {
 
 	// L2
 	mL := map[string]interface{}{
-		"code":       "",
-		"uuid":       "",
-		"type":       "",
-		"created_at": "",
-		"title":      "",
-		"children":   nil,
+		"code":         "",
+		"uuid":         "",
+		"type":         "",
+		"created_at":   "",
+		"title":        "",
+		"doc.typeName": "",
+		"children":     nil,
 	}
 
 	// L2
 	mN := map[string]interface{}{
-		"code":       "",
-		"uuid":       "",
-		"type":       "",
-		"created_at": "",
-		"title":      "",
-		"children":   nil,
+		"code":         "",
+		"uuid":         "",
+		"type":         "",
+		"created_at":   "",
+		"title":        "",
+		"doc.typeName": "",
+		"children":     nil,
 	}
 
 	// L2
 	mCCT := map[string]interface{}{
-		"code":       "",
-		"uuid":       "",
-		"type":       "",
-		"created_at": "",
-		"title":      "",
-		"children":   nil,
+		"code":         "",
+		"uuid":         "",
+		"type":         "",
+		"created_at":   "",
+		"title":        "",
+		"doc.typeName": "",
+		"children":     nil,
 	}
 
 	// L2
 	mPSC := map[string]interface{}{
-		"code":       "",
-		"uuid":       "",
-		"type":       "",
-		"created_at": "",
-		"title":      "",
-		"children":   nil,
+		"code":         "",
+		"uuid":         "",
+		"type":         "",
+		"created_at":   "",
+		"title":        "",
+		"doc.typeName": "",
+		"children":     nil,
 	}
 
 	// L2
 	mDL := map[string]interface{}{
-		"code":       "",
-		"uuid":       "",
-		"type":       "",
-		"created_at": "",
-		"title":      "",
-		"children":   nil,
+		"code":         "",
+		"uuid":         "",
+		"type":         "",
+		"created_at":   "",
+		"title":        "",
+		"doc.typeName": "",
+		"children":     nil,
 	}
 
 	// L2
 	mIU := map[string]interface{}{
-		"code":       "",
-		"uuid":       "",
-		"type":       "",
-		"created_at": "",
-		"title":      "",
-		"children":   nil,
+		"code":         "",
+		"uuid":         "",
+		"type":         "",
+		"created_at":   "",
+		"title":        "",
+		"doc.typeName": "",
+		"children":     nil,
 	}
 
 	// L2
 	mEU := map[string]interface{}{
-		"code":       "",
-		"uuid":       "",
-		"type":       "",
-		"created_at": "",
-		"title":      "",
-		"children":   nil,
+		"code":         "",
+		"uuid":         "",
+		"type":         "",
+		"created_at":   "",
+		"title":        "",
+		"doc.typeName": "",
+		"children":     nil,
 	}
 
 	var (
@@ -200,6 +207,7 @@ func gc(js string) map[string]string {
 									m["type"] = gjson.Get(block2, "type").String()
 									m["created_at"] = gjson.Get(block2, "created_at").String()
 									m["title"] = gjson.Get(block2, "title").String()
+									m["doc.typeName"] = gjson.Get(block2, "doc.typeName").String()
 									m["children"] = gjson.Get(block2, "children").String()
 								}
 							}
@@ -210,10 +218,10 @@ func gc(js string) map[string]string {
 		}
 	}
 
-	fmt.Println(mRoot["title"])
-	fmt.Println(mGC["title"])
-	fmt.Println(mIU["title"])
-	fmt.Println(mEU["title"])
+	// fmt.Println(mRoot["title"])
+	// fmt.Println(mGC["title"])
+	// fmt.Println(mIU["title"])
+	// fmt.Println(mEU["title"])
 
 	for _, L2 := range mL2s {
 
@@ -237,6 +245,7 @@ func gc(js string) map[string]string {
 		out, _ = sjson.Set(out, "children.0.children.0.type", L2["type"])
 		out, _ = sjson.Set(out, "children.0.children.0.created_at", L2["created_at"])
 		out, _ = sjson.Set(out, "children.0.children.0.title", L2["title"])
+		out, _ = sjson.Set(out, "children.0.children.0.doc.typeName", L2["doc.typeName"])
 		out, _ = sjson.SetRaw(out, "children.0.children.0.children", L2["children"].(string))
 
 		// out = jt.FmtStr(out, "  ")

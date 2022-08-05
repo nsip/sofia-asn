@@ -7,14 +7,14 @@ import (
 	"testing"
 
 	"github.com/digisan/gotk/filedir"
-	goio "github.com/digisan/gotk/io"
+	gio "github.com/digisan/gotk/io"
 )
 
 func TestMain(t *testing.T) {
 	main()
 }
 
-// *** //
+// ********** //
 func TestRmDupl(t *testing.T) {
 
 	// each json must be formatted (VSCode)
@@ -28,14 +28,33 @@ func TestRmDupl(t *testing.T) {
 	os.MkdirAll(out1, os.ModePerm)
 
 	for _, f := range files {
-		prevline := ""
-		goio.FileLineScan(f, func(line string) (bool, string) {
+		var (
+			prevline  = ""
+			prev2line = ""
+		)
+		gio.FileLineScan(f, func(line string) (bool, string) {
 			if line == prevline {
 				if strings.Contains(line, `"dc:description"`) {
 					return false, ""
 				}
 			}
-			prevline = line
+
+			{
+				ln := strings.TrimSpace(line)
+				pln := strings.TrimSpace(prevline)
+				p2ln := strings.TrimSpace(prev2line)
+				if strings.HasPrefix(p2ln, `"literal":`) && pln == "}," && strings.HasPrefix(ln, `"dc:description":`) {
+					return false, ""
+				}
+			}
+
+			///
+			if len(prevline) > 0 {
+				prev2line = prevline
+			}
+			if len(line) > 0 {
+				prevline = line
+			}
 			return true, line
 		}, filepath.Join(out1, filepath.Base(f)))
 	}

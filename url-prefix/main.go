@@ -34,6 +34,8 @@ func main() {
 
 	r := regexp.MustCompile(`http://vocabulary.curriculum.edu.au/+[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}`)
 
+	///////////////////////////////////////
+
 	dirIn := "../asn-json/out"
 	dirOut := "../asn-json/out/url"
 	gio.MustCreateDir(dirOut)
@@ -78,8 +80,8 @@ func main() {
 
 	fmt.Println("-------------------------------------------------------")
 
-	dirIn = "../asn-json-ld/out"
-	dirOut = "../asn-json-ld/out/url"
+	dirIn = "../asn-json-ld/out1"
+	dirOut = "../asn-json-ld/out1/url"
 	gio.MustCreateDir(dirOut)
 
 	fs, err = os.ReadDir(dirIn)
