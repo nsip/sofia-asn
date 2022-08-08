@@ -2,12 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	gio "github.com/digisan/gotk/io"
+	"github.com/tidwall/gjson"
 )
 
 func LoadUrl(fpath string) map[string]string {
@@ -18,6 +21,23 @@ func LoadUrl(fpath string) map[string]string {
 		return true, ""
 	}, "")
 	return m
+}
+
+// Tree Path
+func FetchTime(fpath string) (yyyy, mm string) {
+	data, err := os.ReadFile(fpath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	layout := "2006-01-02T15:04:05.000Z"
+	ts := gjson.Get(string(data), "created_at").String()
+	t, err := time.Parse(layout, ts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	ts = t.Format("2006-01-02")
+	ss := strings.Split(ts, "-")
+	return ss[0], ss[1]
 }
 
 func main() {
@@ -33,6 +53,13 @@ func main() {
 	///////////////////////////////////////
 
 	r := regexp.MustCompile(`http://vocabulary.curriculum.edu.au/+[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}`)
+
+	base := "http://vocabulary.curriculum.edu.au/MRAC"
+	yyyy, mm := FetchTime("../data/Sofia-API-Tree-Data-09062022.json")
+	prefix := fmt.Sprintf("%s/%s/%s", base, yyyy, mm)
+	urlModify := func(url string) string {
+		return strings.Replace(url, base, prefix, 1)
+	}
 
 	///////////////////////////////////////
 
@@ -65,7 +92,8 @@ func main() {
 		str = r.ReplaceAllStringFunc(str, func(s string) string {
 			id := s[len(s)-36:]
 			if url, ok := mIdUrl[id]; ok {
-				return url + id
+				url = urlModify(url) + id
+				return url
 			}
 			return s
 		})
@@ -109,7 +137,8 @@ func main() {
 		str = r.ReplaceAllStringFunc(str, func(s string) string {
 			id := s[len(s)-36:]
 			if url, ok := mIdUrl[id]; ok {
-				return url + id
+				url = urlModify(url) + id
+				return url
 			}
 			return s
 		})
