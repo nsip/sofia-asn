@@ -18,8 +18,8 @@ func init() {
 
 func main() {
 
-	outdir := "out"
-	os.MkdirAll(fSf("./%s/", outdir), os.ModePerm)
+	outDir := "out"
+	os.MkdirAll(fSf("./%s/", outDir), os.ModePerm)
 
 	//////////////////////////////////////////////////////////////
 
@@ -29,7 +29,7 @@ func main() {
 
 	bytesNodes, err := os.ReadFile("../data/Sofia-API-Nodes-Data-09062022.json")
 	lk.FailOnErr("%v", err)
-	nodeProcess(bytesNodes, uri4id, mMeta, outdir)
+	nodeProcess(bytesNodes, uri4id, mMeta, outDir)
 
 	//////////////////////////////////////////////////////////////
 
@@ -37,21 +37,21 @@ func main() {
 	lk.FailOnErr("%v", err)
 	js := string(data)
 
-	fileContent := ccp(js, outdir)
-	err = os.WriteFile(fSf("./%s/ccp-%s.json", outdir, "Cross-curriculum Priorities"), []byte(fileContent), os.ModePerm)
+	fileContent := ccp(js, outDir)
+	err = os.WriteFile(fSf("./%s/ccp-%s.json", outDir, "Cross-curriculum Priorities"), []byte(fileContent), os.ModePerm)
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	for gc, fileContent := range gc(js) {
-		err = os.WriteFile(fSf("./%s/gc-%s.json", outdir, gc), []byte(fileContent), os.ModePerm)
+		err = os.WriteFile(fSf("./%s/gc-%s.json", outDir, gc), []byte(fileContent), os.ModePerm)
 		if err != nil {
 			fmt.Println(err)
 		}
 	}
 
 	for la, fileContent := range la(js) {
-		err := os.WriteFile(fSf("./%s/la-%s.json", outdir, la), []byte(fileContent), os.ModePerm)
+		err := os.WriteFile(fSf("./%s/la-%s.json", outDir, la), []byte(fileContent), os.ModePerm)
 		if err != nil {
 			fmt.Println(err)
 		}

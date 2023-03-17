@@ -153,12 +153,12 @@ func scanNodeIdTitle(data []byte) map[string]string {
 	return m
 }
 
-func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string) {
+func nodeProc(data []byte, outDir, outName, sofiaTreeFile, pref4children string) {
 
 	e := bytes.LastIndexAny(data, "}")
 	data = data[:e+1]
 
-	outdir = strings.Trim(outdir, `./\`)
+	outDir = strings.Trim(outDir, `./\`)
 	parts := []string{}
 	out := ""
 
@@ -307,10 +307,10 @@ func nodeProc(data []byte, outdir, outname, sofiaTreeFile, pref4children string)
 	out = jt.FmtStr(out, "  ")                       // format json
 	out = jt.TrimFields(out, true, true, true, true) // remove empty object, string, array
 
-	if !strings.HasSuffix(outname, ".json") {
-		outname += ".json"
+	if !strings.HasSuffix(outName, ".json") {
+		outName += ".json"
 	}
-	os.WriteFile(fmt.Sprintf("./%s/%s", outdir, outname), []byte(out), os.ModePerm)
+	os.WriteFile(fmt.Sprintf("./%s/%s", outDir, outName), []byte(out), os.ModePerm)
 }
 
 func getIdBlock(js string) (mIdBlock, mIdBlockLeaf map[string]string) {

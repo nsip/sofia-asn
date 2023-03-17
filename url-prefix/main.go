@@ -13,9 +13,9 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func LoadUrl(fpath string) map[string]string {
+func LoadUrl(fPath string) map[string]string {
 	m := make(map[string]string)
-	fd.FileLineScan(fpath, func(line string) (bool, string) {
+	fd.FileLineScan(fPath, func(line string) (bool, string) {
 		ss := strings.Split(line, "\t")
 		m[ss[0]] = ss[1]
 		return true, ""
@@ -24,8 +24,8 @@ func LoadUrl(fpath string) map[string]string {
 }
 
 // Tree Path
-func FetchTime(fpath string) (yyyy, mm string) {
-	data, err := os.ReadFile(fpath)
+func FetchTime(fPath string) (yyyy, mm string) {
+	data, err := os.ReadFile(fPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -77,17 +77,17 @@ func main() {
 			continue
 		}
 
-		fpath := filepath.Join(dirIn, f.Name())
-		// fmt.Println(fpath)
+		fPath := filepath.Join(dirIn, f.Name())
+		// fmt.Println(fPath)
 
-		data, err := os.ReadFile(fpath)
+		data, err := os.ReadFile(fPath)
 		if err != nil {
 			panic(err)
 		}
 		str := string(data)
 
 		fd := r.FindAllString(str, -1)
-		fmt.Println(fpath, len(fd))
+		fmt.Println(fPath, len(fd))
 
 		str = r.ReplaceAllStringFunc(str, func(s string) string {
 			id := s[len(s)-36:]
@@ -98,8 +98,8 @@ func main() {
 			return s
 		})
 
-		fpath = filepath.Join(dirOut, f.Name())
-		if err := os.WriteFile(fpath, []byte(str), os.ModePerm); err != nil {
+		fPath = filepath.Join(dirOut, f.Name())
+		if err := os.WriteFile(fPath, []byte(str), os.ModePerm); err != nil {
 			panic(err)
 		}
 	}
@@ -122,17 +122,17 @@ func main() {
 			continue
 		}
 
-		fpath := filepath.Join(dirIn, f.Name())
-		// fmt.Println(fpath)
+		fPath := filepath.Join(dirIn, f.Name())
+		// fmt.Println(fPath)
 
-		data, err := os.ReadFile(fpath)
+		data, err := os.ReadFile(fPath)
 		if err != nil {
 			panic(err)
 		}
 		str := string(data)
 
 		fd := r.FindAllString(str, -1)
-		fmt.Println(fpath, len(fd))
+		fmt.Println(fPath, len(fd))
 
 		str = r.ReplaceAllStringFunc(str, func(s string) string {
 			id := s[len(s)-36:]
@@ -143,8 +143,8 @@ func main() {
 			return s
 		})
 
-		fpath = filepath.Join(dirOut, f.Name())
-		if err := os.WriteFile(fpath, []byte(str), os.ModePerm); err != nil {
+		fPath = filepath.Join(dirOut, f.Name())
+		if err := os.WriteFile(fPath, []byte(str), os.ModePerm); err != nil {
 			panic(err)
 		}
 	}

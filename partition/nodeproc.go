@@ -30,12 +30,12 @@ func parseMeta(js string) map[string]string {
 	return mMeta
 }
 
-func nodeProcess(data []byte, uri string, meta map[string]string, outdir string) {
+func nodeProcess(data []byte, uri string, meta map[string]string, outDir string) {
 
 	e := bytes.LastIndexAny(data, "}")
 	data = data[:e+1]
 
-	outdir = strings.Trim(outdir, `./\`)
+	outDir = strings.Trim(outDir, `./\`)
 	parts := []string{}
 	out := ""
 
@@ -68,7 +68,7 @@ func nodeProcess(data []byte, uri string, meta map[string]string, outdir string)
 
 	lk.FailOnErrWhen(!dt.IsJSON([]byte(out)), "%v", errors.New("Invalid JSON from node & meta"))
 
-	os.WriteFile(fmt.Sprintf("./%s/node-meta.json", outdir), []byte(out), os.ModePerm)
+	os.WriteFile(fmt.Sprintf("./%s/node-meta.json", outDir), []byte(out), os.ModePerm)
 }
 
 //////////////////////////////////////////////////////////////////////

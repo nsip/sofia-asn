@@ -7,7 +7,7 @@ import (
 	"github.com/tidwall/sjson"
 )
 
-func ccp(js, outdir string) string {
+func ccp(js, outDir string) string {
 
 	mRoot := map[string]interface{}{
 		"code":       gjson.Get(js, "code").String(),

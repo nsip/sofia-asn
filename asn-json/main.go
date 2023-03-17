@@ -36,17 +36,17 @@ func main() {
 	defer track.TrackTime(time.Now())
 
 	// {
-	// 	outdir := "./out/"
+	// 	outDir := "./out/"
 	// 	outfile := "asn-node.json"
-	// 	os.MkdirAll(outdir, os.ModePerm)
-	// 	outpath := filepath.Join(outdir, outfile)
+	// 	os.MkdirAll(outDir, os.ModePerm)
+	// 	outpath := filepath.Join(outDir, outfile)
 
 	// 	if !filedir.FileExists(outpath) {
 	// 		data, err := os.ReadFile("../partition/out/node-meta.json")
 	// 		if err != nil {
 	// 			panic(err)
 	// 		}
-	// 		nodeProc(data, outdir, outfile, "../data/Sofia-API-Tree-Data-09062022.json", uri4id)
+	// 		nodeProc(data, outDir, outfile, "../data/Sofia-API-Tree-Data-09062022.json", uri4id)
 	// 	}
 
 	// 	// 	// 	/////

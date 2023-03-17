@@ -41,9 +41,9 @@ func weight(path string, lvl int) int64 {
 
 // get certain level's field('code') & its value,
 // return map for path('code')-value
-func getCodes(fpath string, level int) map[string]string {
+func getCodes(fPath string, level int) map[string]string {
 
-	jsBytes, err := os.ReadFile(fpath)
+	jsBytes, err := os.ReadFile(fPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -73,7 +73,7 @@ func getCodes(fpath string, level int) map[string]string {
 	return mPathCode
 }
 
-func extractNodeCodes(fpath, opath string) int {
+func extractNodeCodes(fPath, opath string) int {
 	mCodesNode := getCodes("../data/node.pretty.json", -1)
 	_, codesNode := MapToKVs(mCodesNode, nil, nil)
 	for _, code := range codesNode {
@@ -82,17 +82,17 @@ func extractNodeCodes(fpath, opath string) int {
 	return len(mCodesNode)
 }
 
-func loadNodeCodes(fpath string) (codes []string) {
-	fd.FileLineScan(fpath, func(line string) (bool, string) {
+func loadNodeCodes(fPath string) (codes []string) {
+	fd.FileLineScan(fPath, func(line string) (bool, string) {
 		codes = append(codes, line)
 		return false, ""
 	}, "")
 	return Settify(codes...)
 }
 
-func loadScotTxtMapCodeUrls(fpath string) map[string][]string {
+func loadScotTxtMapCodeUrls(fPath string) map[string][]string {
 	mCodeUrls := make(map[string][]string)
-	fd.FileLineScan(fpath, func(line string) (bool, string) {
+	fd.FileLineScan(fPath, func(line string) (bool, string) {
 		line = strings.TrimSpace(line)
 		if len(line) > 0 {
 			ss := strings.Split(line, "\t")
@@ -104,9 +104,9 @@ func loadScotTxtMapCodeUrls(fpath string) map[string][]string {
 	return mCodeUrls
 }
 
-func loadScotTxtMapUrlCodes(fpath string) map[string][]string {
+func loadScotTxtMapUrlCodes(fPath string) map[string][]string {
 	mUrlCodes := make(map[string][]string)
-	fd.FileLineScan(fpath, func(line string) (bool, string) {
+	fd.FileLineScan(fPath, func(line string) (bool, string) {
 		line = strings.TrimSpace(line)
 		if len(line) > 0 {
 			ss := strings.Split(line, "\t")
@@ -127,11 +127,11 @@ func loadScotTxtMapUrlCodes(fpath string) map[string][]string {
 }
 
 // id is url style
-func loadScotJsonldIDs(fpath string) (ids []string) {
+func loadScotJsonldIDs(fPath string) (ids []string) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	r, err := os.Open(fpath)
+	r, err := os.Open(fPath)
 	lk.FailOnErr("%v", err)
 
 	cObj, cErr, err := jt.ScanObjectInArray(ctx, r, true)
@@ -164,11 +164,11 @@ func main() {
 	{
 		lk.Log(" Tree.json ...")
 
-		// fpath := "../data/tree.pretty.json"
-		fpath := "../data/Sofia_API_Data_25052022.json"
+		// fPath := "../data/tree.pretty.json"
+		fPath := "../data/Sofia_API_Data_25052022.json"
 
 		lvl := 4
-		mCodesTree := getCodes(fpath, lvl)
+		mCodesTree := getCodes(fPath, lvl)
 		// for k, v := range codes {
 		// 	fmt.Println(k, v)
 		// }
