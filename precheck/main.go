@@ -10,8 +10,8 @@ import (
 	"time"
 
 	. "github.com/digisan/go-generics/v2"
-	gio "github.com/digisan/gotk/io"
-	"github.com/digisan/gotk/misc"
+	fd "github.com/digisan/gotk/file-dir"
+	"github.com/digisan/gotk/track"
 	jt "github.com/digisan/json-tool"
 	lk "github.com/digisan/logkit"
 	"github.com/tidwall/gjson"
@@ -75,15 +75,15 @@ func getCodes(fpath string, level int) map[string]string {
 
 func extractNodeCodes(fpath, opath string) int {
 	mCodesNode := getCodes("../data/node.pretty.json", -1)
-	_, codesNode := Map2KVs(mCodesNode, nil, nil)
+	_, codesNode := MapToKVs(mCodesNode, nil, nil)
 	for _, code := range codesNode {
-		gio.MustAppendFile(opath, []byte(code), true)
+		fd.MustAppendFile(opath, []byte(code), true)
 	}
 	return len(mCodesNode)
 }
 
 func loadNodeCodes(fpath string) (codes []string) {
-	gio.FileLineScan(fpath, func(line string) (bool, string) {
+	fd.FileLineScan(fpath, func(line string) (bool, string) {
 		codes = append(codes, line)
 		return false, ""
 	}, "")
@@ -92,7 +92,7 @@ func loadNodeCodes(fpath string) (codes []string) {
 
 func loadScotTxtMapCodeUrls(fpath string) map[string][]string {
 	mCodeUrls := make(map[string][]string)
-	gio.FileLineScan(fpath, func(line string) (bool, string) {
+	fd.FileLineScan(fpath, func(line string) (bool, string) {
 		line = strings.TrimSpace(line)
 		if len(line) > 0 {
 			ss := strings.Split(line, "\t")
@@ -106,7 +106,7 @@ func loadScotTxtMapCodeUrls(fpath string) map[string][]string {
 
 func loadScotTxtMapUrlCodes(fpath string) map[string][]string {
 	mUrlCodes := make(map[string][]string)
-	gio.FileLineScan(fpath, func(line string) (bool, string) {
+	fd.FileLineScan(fpath, func(line string) (bool, string) {
 		line = strings.TrimSpace(line)
 		if len(line) > 0 {
 			ss := strings.Split(line, "\t")
@@ -149,7 +149,7 @@ func loadScotJsonldIDs(fpath string) (ids []string) {
 
 func main() {
 
-	defer misc.TrackTime(time.Now())
+	defer track.TrackTime(time.Now())
 
 	/// 1) create "node.code.txt"
 	//
@@ -173,7 +173,7 @@ func main() {
 		// 	fmt.Println(k, v)
 		// }
 
-		_, codesTree = Map2KVs(mCodesTree, func(i, j string) bool {
+		_, codesTree = MapToKVs(mCodesTree, func(i, j string) bool {
 			return weight(i, lvl) < weight(j, lvl)
 		}, nil)
 		codesTree = Settify(codesTree...)

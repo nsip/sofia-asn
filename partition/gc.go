@@ -225,7 +225,7 @@ func gc(js string) map[string]string {
 
 	for _, L2 := range mL2s {
 
-		if MapAllValuesAreEmpty(L2) {
+		if MapAllValAreEmpty(L2) {
 			continue
 		}
 

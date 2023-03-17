@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	gio "github.com/digisan/gotk/io"
-	"github.com/digisan/gotk/misc"
+	fd "github.com/digisan/gotk/file-dir"
+	"github.com/digisan/gotk/track"
 	"github.com/tidwall/gjson"
 )
 
@@ -16,7 +16,7 @@ var (
 )
 
 func main() {
-	defer misc.TrackTime(time.Now())
+	defer track.TrackTime(time.Now())
 
 	data, err := os.ReadFile("../data/Sofia-API-Nodes-Data-09062022.json")
 	if err != nil {
@@ -71,12 +71,12 @@ func main() {
 
 	fpathIdUrl := "./id-url.txt"
 	for id, url := range mIdUrl {
-		gio.MustAppendFile(fpathIdUrl, []byte(fmt.Sprintf("%s\t%s", id, url)), true)
+		fd.MustAppendFile(fpathIdUrl, []byte(fmt.Sprintf("%s\t%s", id, url)), true)
 	}
 
 	fpathCodeUrl := "./code-url.txt"
 	for id, url := range mCodeUrl {
-		gio.MustAppendFile(fpathCodeUrl, []byte(fmt.Sprintf("%s\t%s", id, url)), true)
+		fd.MustAppendFile(fpathCodeUrl, []byte(fmt.Sprintf("%s\t%s", id, url)), true)
 	}
 
 }

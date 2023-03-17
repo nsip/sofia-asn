@@ -6,8 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/digisan/gotk/filedir"
-	gio "github.com/digisan/gotk/io"
+	fd "github.com/digisan/gotk/file-dir"
 )
 
 func TestMain(t *testing.T) {
@@ -19,7 +18,7 @@ func TestRmDupl(t *testing.T) {
 
 	// each json must be formatted (VSCode)
 	in := "./out"
-	files, _, err := filedir.WalkFileDir(in, false)
+	files, _, err := fd.WalkFileDir(in, false)
 	if err != nil {
 		panic(err)
 	}
@@ -32,7 +31,7 @@ func TestRmDupl(t *testing.T) {
 			prevline  = ""
 			prev2line = ""
 		)
-		gio.FileLineScan(f, func(line string) (bool, string) {
+		fd.FileLineScan(f, func(line string) (bool, string) {
 			if line == prevline {
 				if strings.Contains(line, `"dc:description"`) {
 					return false, ""

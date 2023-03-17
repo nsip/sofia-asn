@@ -9,13 +9,13 @@ import (
 	"strings"
 	"time"
 
-	gio "github.com/digisan/gotk/io"
+	fd "github.com/digisan/gotk/file-dir"
 	"github.com/tidwall/gjson"
 )
 
 func LoadUrl(fpath string) map[string]string {
 	m := make(map[string]string)
-	gio.FileLineScan(fpath, func(line string) (bool, string) {
+	fd.FileLineScan(fpath, func(line string) (bool, string) {
 		ss := strings.Split(line, "\t")
 		m[ss[0]] = ss[1]
 		return true, ""
@@ -65,7 +65,7 @@ func main() {
 
 	dirIn := "../asn-json/out"
 	dirOut := "../asn-json/out/url"
-	gio.MustCreateDir(dirOut)
+	fd.MustCreateDir(dirOut)
 
 	fs, err := os.ReadDir(dirIn)
 	if err != nil {
@@ -110,7 +110,7 @@ func main() {
 
 	dirIn = "../asn-json-ld/out1"
 	dirOut = "../asn-json-ld/out1/url"
-	gio.MustCreateDir(dirOut)
+	fd.MustCreateDir(dirOut)
 
 	fs, err = os.ReadDir(dirIn)
 	if err != nil {

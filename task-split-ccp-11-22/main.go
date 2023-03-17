@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	goio "github.com/digisan/gotk/io"
+	fd "github.com/digisan/gotk/file-dir"
 	"github.com/digisan/gotk/strs"
 	lk "github.com/digisan/logkit"
 	"github.com/tidwall/gjson"
@@ -16,7 +16,7 @@ func main() {
 	// asn json
 	{
 		outDir := "./json/MRAC/2022/06/GC/CCP/"
-		goio.MustCreateDir(outDir)
+		fd.MustCreateDir(outDir)
 
 		dataCcp, err := os.ReadFile("../asn-json/out/url/ccp-Cross-curriculum Priorities.json")
 		lk.FailOnErr("%v", err)
@@ -66,7 +66,7 @@ func main() {
 	// asn-json-ld
 	{
 		outDir := "./json-ld/MRAC/2022/06/GC/CCP/"
-		goio.MustCreateDir(outDir)
+		fd.MustCreateDir(outDir)
 
 		dataCcp, err := os.ReadFile("../asn-json-ld/out1/url/ccp-Cross-curriculum Priorities.json")
 		lk.FailOnErr("%v", err)

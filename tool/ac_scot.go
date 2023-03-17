@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	gio "github.com/digisan/gotk/io"
+	fd "github.com/digisan/gotk/file-dir"
 	jt "github.com/digisan/json-tool"
 	lk "github.com/digisan/logkit"
 	"github.com/tidwall/gjson"
@@ -16,7 +16,7 @@ import (
 
 func getAcScotMap(acscotPath string) map[string][]string {
 	m := make(map[string][]string)
-	_, err := gio.FileLineScan(acscotPath, func(line string) (bool, string) {
+	_, err := fd.FileLineScan(acscotPath, func(line string) (bool, string) {
 		if strings.HasPrefix(line, "AC") {
 			k, v := "", ""
 			for _, s := range strings.Split(line, "\t") {

@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	// . "github.com/digisan/go-generics/v2"
-	tc "github.com/digisan/gotk/type-check"
+	dt "github.com/digisan/gotk/data-type"
 	jt "github.com/digisan/json-tool"
 	lk "github.com/digisan/logkit"
 	"github.com/nsip/sofia-asn/tool"
@@ -66,7 +66,7 @@ func nodeProcess(data []byte, uri string, meta map[string]string, outdir string)
 	out = "{" + strings.Join(parts, "") + "}"
 	// out = jt.FmtStr(out, "  ")
 
-	lk.FailOnErrWhen(!tc.IsJSON(out), "%v", errors.New("Invalid JSON from node & meta"))
+	lk.FailOnErrWhen(!dt.IsJSON([]byte(out)), "%v", errors.New("Invalid JSON from node & meta"))
 
 	os.WriteFile(fmt.Sprintf("./%s/node-meta.json", outdir), []byte(out), os.ModePerm)
 }

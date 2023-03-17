@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/digisan/gotk/misc"
+	"github.com/digisan/gotk/track"
 	jt "github.com/digisan/json-tool"
 	"github.com/nsip/sofia-asn/tool"
 )
@@ -33,7 +33,7 @@ func restoreEsc(js string) string {
 }
 
 func main() {
-	defer misc.TrackTime(time.Now())
+	defer track.TrackTime(time.Now())
 
 	// {
 	// 	outdir := "./out/"
