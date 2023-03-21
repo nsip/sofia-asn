@@ -52,11 +52,11 @@ func main() {
 		for path, literal := range mPathLiteral {
 
 			part := mLiteralPart[literal]
-			outpart, err := sjson.Delete(jsCcp, strs.TrimTailFromLast(path, "."))
+			outPart, err := sjson.Delete(jsCcp, strs.TrimTailFromLast(path, "."))
 			lk.FailOnErr("%v", err)
 
 			pathOne := "children.0.children.0"
-			out, err := sjson.SetRaw(outpart, pathOne, part)
+			out, err := sjson.SetRaw(outPart, pathOne, part)
 			lk.FailOnErr("%v", err)
 
 			os.WriteFile(outDir+literal+".json", []byte(out), os.ModePerm)
@@ -102,11 +102,11 @@ func main() {
 		for path, literal := range mPathLiteral {
 
 			part := mLiteralPart[literal]
-			outpart, err := sjson.Delete(jsCcp, strs.TrimTailFromLast(path, "."))
+			outPart, err := sjson.Delete(jsCcp, strs.TrimTailFromLast(path, "."))
 			lk.FailOnErr("%v", err)
 
 			pathOne := "gem:hasChild.0.gem:hasChild.0"
-			out, err := sjson.SetRaw(outpart, pathOne, part)
+			out, err := sjson.SetRaw(outPart, pathOne, part)
 			lk.FailOnErr("%v", err)
 
 			os.WriteFile(outDir+literal+".json", []byte(out), os.ModePerm)

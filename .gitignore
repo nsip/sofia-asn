@@ -36,3 +36,7 @@ asn-json-ld/*.log
 
 url-prefix/url-prefix
 url-prefix/*.log
+
+out/
+task-*/out
+task-structure-improvement-03-23/task-structure-improvement-03-23

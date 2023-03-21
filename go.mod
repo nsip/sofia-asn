@@ -3,8 +3,8 @@ module github.com/nsip/sofia-asn
 go 1.20
 
 require (
-	github.com/digisan/go-generics v0.3.3
-	github.com/digisan/gotk v0.3.4
+	github.com/digisan/go-generics v0.3.5
+	github.com/digisan/gotk v0.3.5
 	github.com/digisan/json-tool v0.2.3
 	github.com/digisan/logkit v0.2.3
 	github.com/tidwall/gjson v1.14.4
